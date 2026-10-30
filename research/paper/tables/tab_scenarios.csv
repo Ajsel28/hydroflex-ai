@@ -1,0 +1,10 @@
+Scenario,Inflow factor,Demand factor,Import price,NTC avail.,Prob.
+Normal,1.00,1.00,1.00,1.00,--
+Moderate drought,0.78,1.00,1.00,1.00,--
+Severe drought,0.60,1.00,1.00,1.00,--
+Compound shock,0.60,1.08,1.80,0.70,--
+Wet year (stoch.),1.226,1.00,1.00,1.00,0.222
+Normal (stoch.),0.989,1.00,1.00,1.00,0.370
+Dry year (stoch.),0.823,1.00,1.00,1.00,0.259
+Severe drought (stoch.),0.600,1.00,1.00,1.00,0.100
+Compound shock (stoch.),0.600,1.08,1.80,0.70,0.050

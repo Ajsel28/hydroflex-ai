@@ -193,9 +193,9 @@ def _stack(ax, t, s, title, ylim=None, legend=False):
     ax.set_ylabel("MW")
     if ylim:
         ax.set_ylim(*ylim)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
-    if legend:
-        ax.legend(ncol=5, loc="upper center", bbox_to_anchor=(1.05, -0.2), fontsize=6.5)
+    ax.xaxis.set_major_locator(mdates.DayLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d"))
+    ax.set_xlabel("day of month (UTC)", fontsize=7)
 
 
 def fig_dispatch() -> None:
@@ -208,8 +208,10 @@ def fig_dispatch() -> None:
         for row, (d0, name) in enumerate(((14, "winter week (15–21 Jan)"), (196, "summer week (16–22 Jul)"))):
             sl = slice(d0 * 24, d0 * 24 + 168)
             ss = {k: v[sl] for k, v in s.items()}
-            _stack(axs[row, col], t[sl], ss, f"{lab}: {name}", ylim=(-1000, 2400), legend=(row == 1 and col == 0))
-    fig.tight_layout()
+            _stack(axs[row, col], t[sl], ss, f"{lab}: {name}", ylim=(-1000, 2400))
+    h, lab_ = axs[0, 0].get_legend_handles_labels()
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    fig.legend(h, lab_, ncol=5, loc="lower center", fontsize=6.8)
     save(fig, "fig04_dispatch_normal_vs_drought")
 
 
@@ -320,21 +322,37 @@ def fig_frontier() -> None:
     st = d["strategies"]
     fig, axs = plt.subplots(1, 2, figsize=(7.2, 3.2))
     fam_c = {"baseline": "#0F172A", "solar": C["pv"], "wind": C["wind"], "battery": C["battery"],
-             "coordinated": C["hydro"], "robust": C["risk"], "budget_sweep": "#94A3B8"}
+             "coordinated": C["hydro"], "robust": "#DB2777", "budget_sweep": "#94A3B8"}
     for s in st:
         x = s["expected"]["total_cost_keur_annualised"] / 1e3
         y = s["expected"]["imports_mwh"] / 1e6
         axs[0].scatter(x, y, s=40 if s["pareto"] else 22, color=fam_c[s["family"]], edgecolor="#0F172A" if s["pareto"] else "none",
                        lw=0.8, zorder=3)
-        if s["family"] not in ("budget_sweep",) and not s["id"].startswith("R_"):
-            axs[0].annotate(s["name"].split(" (")[0], (x, y), fontsize=5.8, xytext=(3, 3), textcoords="offset points")
+    groups: dict = {}
+    for s in st:
+        if s["family"] == "budget_sweep" or s["id"].startswith("R_"):
+            continue
+        key = (round(s["expected"]["total_cost_keur_annualised"]), round(s["expected"]["imports_mwh"]))
+        groups.setdefault(key, []).append(s)
+    for g in groups.values():
+        s0 = g[0]
+        lab = " = ".join(x["id"].split("_")[0] for x in g)
+        if len(g) == 1:
+            lab = s0["name"].split(" (")[0]
+        axs[0].annotate(lab, (s0["expected"]["total_cost_keur_annualised"] / 1e3, s0["expected"]["imports_mwh"] / 1e6),
+                        fontsize=6, xytext=(4, 4), textcoords="offset points")
+    sweep = sorted([s for s in st if s["family"] == "budget_sweep" or s["id"] == "E_coordinated"],
+                   key=lambda s: s["capex_overnight_meur"])
+    axs[0].plot([s["expected"]["total_cost_keur_annualised"] / 1e3 for s in sweep],
+                [s["expected"]["imports_mwh"] / 1e6 for s in sweep], color="#94A3B8", lw=0.6, zorder=1,
+                label="deterministic budget sweep (100–2000 MEUR)")
     pf = sorted([s for s in st if s["pareto"]], key=lambda s: s["expected"]["total_cost_keur_annualised"])
-    axs[0].plot([s["expected"]["total_cost_keur_annualised"] / 1e3 for s in pf], [s["expected"]["imports_mwh"] / 1e6 for s in pf],
-                color="#0F172A", lw=0.7, ls="--", zorder=2, label="non-dominated set")
+    axs[0].scatter([s["expected"]["total_cost_keur_annualised"] / 1e3 for s in pf], [s["expected"]["imports_mwh"] / 1e6 for s in pf],
+                   s=90, facecolor="none", edgecolor="#0F172A", lw=1.0, zorder=4, label="non-dominated")
     axs[0].set_xlabel("expected total annualised cost (MEUR / yr)")
     axs[0].set_ylabel("expected imports (TWh / yr)")
     axs[0].set_title("(a) Cost–import-dependence frontier")
-    axs[0].legend(loc="upper right")
+    axs[0].legend(loc="lower right", fontsize=6.2)
     keys = d["evaluation_scenarios"]
     main = [s for s in st if s["family"] != "budget_sweep" and not s["id"].startswith("R_")]
     w = 0.8 / len(keys)
@@ -370,15 +388,26 @@ def fig_cvar() -> None:
     axs[0].set_ylabel("annual operating cost (MEUR / yr)")
     axs[0].set_title("(a) Scenario operating costs, stochastic plan (λ=1)")
     axs[0].legend(fontsize=6)
-    rows = [x for x in rs["rows"] if x["status"] == "Optimal" and "budget_meur" not in x]
-    ex = [x["objective_keur_annualised"] - x["lambda"] * x["risk"]["cvar_keur_annualised"] for x in rows]
-    cv = [x["risk"]["cvar_keur_annualised"] for x in rows]
-    axs[1].plot(np.array(cv) / 1e3, np.array(ex) / 1e3, marker="o", color=C["risk"])
-    for x, a, b in zip(rows, cv, ex, strict=True):
-        axs[1].annotate(f"λ={x['lambda']}", (a / 1e3, b / 1e3), fontsize=6, xytext=(3, 3), textcoords="offset points")
+    i2 = load("exp-I2-conditions")
+    if i2:
+        for exp_cap, bud, mk in ((300.0, 1500.0, "o"), (300.0, 1000.0, "s"), (900.0, 1500.0, "^")):
+            rr = [x for x in i2["rows"] if x["export_capacity_mw"] == exp_cap and x["budget_meur"] == bud]
+            if not rr:
+                continue
+            r0 = rr[0]
+            pts = [("deterministic", r0["eev_cvar_keur_annualised"], r0["eev_expected_cost_keur_annualised"])]
+            pts += [(f"stoch. λ={x['lambda']:g}", x["rp_cvar_keur_annualised"], x["rp_expected_cost_keur_annualised"]) for x in rr]
+            col = {300.0: C["risk"], 900.0: C["hydro"]}[exp_cap]
+            axs[1].plot([p[1] / 1e3 for p in pts], [p[2] / 1e3 for p in pts], marker=mk, color=col, lw=0.8, ms=5,
+                        label=f"export {exp_cap:.0f} MW, budget {bud:.0f} MEUR")
+            for lab, xx, yy in pts:
+                if exp_cap == 300.0 and bud == 1500.0:
+                    axs[1].annotate(lab, (xx / 1e3, yy / 1e3), fontsize=6, textcoords="offset points",
+                                    xytext=(4, -10) if lab == "deterministic" else ((-40, 6) if "=0" in lab else (4, 3)))
+        axs[1].legend(fontsize=6)
     axs[1].set_xlabel("CVaR$_{0.9}$ of operating cost (MEUR / yr)")
     axs[1].set_ylabel("expected total cost (MEUR / yr)")
-    axs[1].set_title("(b) Risk–cost trade-off (budget 500 MEUR)")
+    axs[1].set_title("(b) Risk–cost trade-off (Experiment I2)")
     fig.tight_layout()
     save(fig, "fig09_cvar")
 
@@ -398,7 +427,7 @@ def fig_sensitivity() -> None:
     axs[0].set_yticklabels([r["label"] for r in tor], fontsize=6.5)
     axs[0].axvline(0, color="#0F172A", lw=0.6)
     axs[0].set_xlabel("Δ optimal annual system cost vs base (MEUR / yr)")
-    axs[0].set_title("(a) Tornado (blue = low, red = high value)")
+    axs[0].set_title("(a) Tornado (blue: low, red: high)")
     h = s["heatmap"]
     z = np.asarray(h["z"], dtype=float) / 1e3
     vmax = np.nanmax(np.abs(z))
@@ -412,7 +441,7 @@ def fig_sensitivity() -> None:
             axs[1].text(j, i, f"{z[i, j]:.1f}", ha="center", va="center", fontsize=6)
     axs[1].set_xlabel(h["x_label"])
     axs[1].set_ylabel(h["y_label"])
-    axs[1].set_title("(b) Net battery benefit (MEUR/yr), NTC 60%")
+    axs[1].set_title("(b) Net battery benefit, NTC 60%")
     axs[1].grid(False)
     fig.colorbar(im, ax=axs[1], shrink=0.8)
     fig.tight_layout()

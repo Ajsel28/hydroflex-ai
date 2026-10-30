@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Independent verification of the native sparse LP against a PyPSA/linopy formulation of the same system (both solved with HiGHS). Times in seconds include model construction. Reservoir trajectories may differ where the LP optimum is not unique.}
+\label{tab:validation}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Scenario & Hours & Invest & Native (kEUR) & PyPSA (kEUR) & Rel. diff. & max$|\Delta V|$ & t native & t PyPSA \\
+\midrule
+normal & 168 & no & -4\,170.98 & -4\,170.98 & 0.0e+00 & 0.00e+00 & 0.05 & 28.60 \\
+severe drought & 168 & no & 1\,980.89 & 1\,980.89 & 0.0e+00 & 0.00e+00 & 0.05 & 4.45 \\
+compound shock & 168 & yes & -6\,408.66 & -6\,408.66 & 0.0e+00 & 2.21e-01 & 0.11 & 4.76 \\
+normal & 720 & no & -8\,057.99 & -8\,057.99 & 0.0e+00 & 2.72e+00 & 0.21 & 4.49 \\
+severe drought & 720 & yes & -3\,637.15 & -3\,637.15 & 0.0e+00 & 5.81e-01 & 0.43 & 5.74 \\
+\bottomrule
+\end{tabular}
+\end{table}

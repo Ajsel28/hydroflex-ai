@@ -215,14 +215,17 @@ def t_stochastic() -> None:
     if d and d.get("deterministic_comparison"):
         c = d["deterministic_comparison"]
         a, b = d["additions"], c["deterministic_plan_additions"]
-        rows = [["Stochastic (RP), $\\lambda$=1", f0(a["pv"]), f0(a["wind"]), f0(a["bp"]), f0(a["be"]),
-                 f1(c["rp_expected_cost_keur"] / d["horizon"]["weight_of_year"] / 1e3), f1(c["rp_cvar_keur_annualised"] / 1e3)],
+        lam = d["risk"]["lambda"]
+        rows = [[rf"Stochastic (RP), $\lambda$={lam:g}", f0(a["pv"]), f0(a["wind"]), f0(a["bp"]), f0(a["be"]),
+                 f1(c["rp_expected_cost_keur_annualised"] / 1e3), f1(c["rp_cvar_keur_annualised"] / 1e3)],
                 ["Deterministic (normal year)", f0(b["pv"]), f0(b["wind"]), f0(b["bp"]), f0(b["be"]),
-                 f1(c["eev_expected_cost_keur"] / d["horizon"]["weight_of_year"] / 1e3), f1((c["eev_cvar_keur_annualised"] or 0) / 1e3)]]
+                 f1(c["eev_expected_cost_keur_annualised"] / 1e3), f1((c["eev_cvar_keur_annualised"] or 0) / 1e3)]]
+        evpi = c.get("evpi_keur_annualised")
+        evpi_txt = f"EVPI = {evpi / 1e3:.2f} MEUR/yr" if evpi is not None else r"EVPI is reported only for $\lambda=0$"
         write("tab_stochastic", ["Plan", "+PV", "+Wind", "+B MW", "+B MWh", "E[cost]", "CVaR$_{0.9}$"], rows,
-              f"Two-stage stochastic versus deterministic planning (budget 500 MEUR). E[cost]: expected total annualised "
-              f"cost (MEUR/yr) evaluated on all five scenarios; CVaR of operating cost (MEUR/yr). "
-              f"VSS = {c['vss_keur_annualised'] / 1e3:.2f} MEUR/yr; EVPI = {c['evpi_keur_annualised'] / 1e3:.2f} MEUR/yr.",
+              f"Two-stage stochastic versus deterministic planning (budget 500 MEUR, 8 representative weeks, water-value "
+              f"boundaries). E[cost]: expected total annualised cost (MEUR/yr) on all five scenarios; CVaR of operating "
+              f"cost (MEUR/yr). Risk-adjusted VSS = {c['vss_keur_annualised'] / 1e3:.2f} MEUR/yr; {evpi_txt}.",
               "tab:stochastic")
     if rs:
         rows, raw = [], []
@@ -238,6 +241,44 @@ def t_stochastic() -> None:
         write("tab_risk_sweep", ["$\\lambda$", "Budget", "+PV", "+Wind", "+B MW", "+B MWh", "E[cost]", "CVaR$_{0.9}$", "Time (s)"],
               rows, "Risk-weight sweep of the two-stage programme ($\\alpha=0.9$). Costs in MEUR/yr; time is wall-clock for "
               "both boundary passes.", "tab:risk-sweep", raw_rows=raw, size=r"\footnotesize")
+
+
+def t_i2() -> None:
+    d = load("exp-I2-conditions")
+    if not d:
+        return
+    rows, raw = [], []
+    for r in d["rows"]:
+        a, b = r["rp_additions"], r["det_additions"]
+        rows.append([f0(r["export_capacity_mw"]), f0(r["budget_meur"]), f"{r['lambda']:g}",
+                     f"{a['pv']:.0f}/{a['wind']:.0f}/{a['bp']:.0f}/{a['be']:.0f}", f"{b['pv']:.0f}/{b['wind']:.0f}/{b['bp']:.0f}/{b['be']:.0f}",
+                     f1(r["rp_expected_cost_keur_annualised"] / 1e3), f1(r["eev_expected_cost_keur_annualised"] / 1e3),
+                     f1(r["rp_cvar_keur_annualised"] / 1e3), f1(r["eev_cvar_keur_annualised"] / 1e3), f1(r["vss_keur_annualised"] / 1e3)])
+        raw.append([r["export_capacity_mw"], r["budget_meur"], r["lambda"], a, b, r["rp_expected_cost_keur_annualised"],
+                    r["eev_expected_cost_keur_annualised"], r["rp_cvar_keur_annualised"], r["eev_cvar_keur_annualised"],
+                    r["vss_keur_annualised"]])
+    write("tab_i2", ["Export MW", "Budget", r"$\lambda$", "Stoch. adds", "Det. adds", "E RP", "E EEV", "CVaR RP", "CVaR EEV", "VSS"],
+          rows, "Experiment I2: stochastic (RP) versus deterministic-plan evaluation (EEV) under restricted and full export "
+          "capacity. Additions as PV/wind MW / battery MW/MWh; E = expected total annualised cost, CVaR$_{0.9}$ of "
+          "operating cost and risk-adjusted VSS in MEUR/yr (representative weeks, water-value boundaries).", "tab:i2",
+          raw_rows=raw, size=r"\scriptsize")
+
+
+def t_chrono() -> None:
+    d = load("exp-H-chronological-check")
+    if not d:
+        return
+    rows, raw = [], []
+    for r in d["rows"]:
+        rows.append([esc(r["name"]), f1(r["chrono_expected_total_keur"] / 1e3), f1(r["repweek_expected_total_keur"] / 1e3),
+                     f1((r["repweek_expected_total_keur"] - r["chrono_expected_total_keur"]) / 1e3),
+                     f1(r["chrono_cvar_total_keur"] / 1e3), f1(r["repweek_cvar_total_keur"] / 1e3), f0(r["chrono_expected_ens_mwh"])])
+        raw.append([r["name"], r["chrono_expected_total_keur"], r["repweek_expected_total_keur"], r["chrono_cvar_total_keur"],
+                    r["repweek_cvar_total_keur"], r["chrono_expected_ens_mwh"]])
+    write("tab_chrono", ["Plan", "E[cost] chrono", "E[cost] rep.", "Diff.", "CVaR chrono", "CVaR rep.", "ENS chrono"], rows,
+          "Full-year chronological (8760 h, hourly) versus representative-week (8 weeks, water-value boundaries) "
+          "evaluation of the same plans on the five-scenario set. Costs in MEUR/yr; CVaR$_{0.9}$ of total annualised "
+          "cost; ENS expected MWh/yr.", "tab:chrono", raw_rows=raw, colspec="p{5cm}rrrrrr", size=r"\footnotesize")
 
 
 def t_marginal() -> None:
@@ -313,7 +354,7 @@ def t_data_dictionary() -> None:
 
 def main() -> None:
     print("tables:")
-    for f in (t_assumptions, t_scenarios, t_annual, t_CDE, t_FG, t_strategies, t_stochastic, t_marginal, t_validation,
+    for f in (t_assumptions, t_scenarios, t_annual, t_CDE, t_FG, t_strategies, t_stochastic, t_i2, t_chrono, t_marginal, t_validation,
               t_solver, t_data_dictionary):
         try:
             f()

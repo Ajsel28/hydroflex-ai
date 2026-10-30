@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Investment strategies evaluated on the five-scenario set (representative weeks, hourly). Additions in MW/MWh, overnight capex in MEUR, expected total annualised cost and severe-drought cost in MEUR/yr, expected imports in TWh/yr; ND marks the non-dominated set in (expected cost, expected imports).}
+\label{tab:strategies}
+\begin{tabular}{p{4.2cm}rrrrrrrrc}
+\toprule
+Strategy & +PV & +Wind & +B MW & +B MWh & Capex & E[cost] & E[imp.] & Cost sev. & ND \\
+\midrule
+A. Baseline & 0 & 0 & 0 & 0 & 0 & 109.4 & 2.27 & 320.4 &  \\
+B. Solar expansion & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+C. Wind expansion & 0 & 418 & 0 & 0 & 500 & 112.1 & 2.07 & 323.7 &  \\
+D. Battery expansion & 0 & 0 & 522 & 2\,087 & 500 & 164.9 & 2.83 & 373.4 &  \\
+E. Coordinated (deterministic optimum) & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+F. Climate-robust (stochastic, CVaR λ=1) & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+Budget 100 MEUR (det.) & 126 & 0 & 0 & 0 & 100 & 101.4 & 2.13 & 312.9 &  \\
+Budget 250 MEUR (det.) & 315 & 0 & 0 & 0 & 250 & 89.7 & 1.93 & 301.8 &  \\
+Budget 750 MEUR (det.) & 944 & 0 & 0 & 0 & 750 & 53.7 & 1.46 & 266.5 &  \\
+Budget 1000 MEUR (det.) & 1\,258 & 0 & 0 & 0 & 1\,000 & 37.9 & 1.37 & 251.2 &  \\
+Budget 1500 MEUR (det.) & 1\,888 & 0 & 0 & 0 & 1\,500 & 12.9 & 1.27 & 225.1 &  \\
+Budget 2000 MEUR (det.) & 2\,000 & 0 & 0 & 0 & 1\,589 & 10.4 & 1.26 & 222.3 & $\bullet$ \\
+Stochastic λ=0.0 (500 MEUR) & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+Stochastic λ=0.25 (500 MEUR) & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+Stochastic λ=4.0 (500 MEUR) & 629 & 0 & 0 & 0 & 500 & 70.9 & 1.64 & 283.5 &  \\
+Stochastic λ=0.0 (1500 MEUR) & 1\,888 & 0 & 0 & 0 & 1\,500 & 12.9 & 1.27 & 225.1 &  \\
+Stochastic λ=4.0 (1500 MEUR) & 1\,888 & 0 & 0 & 0 & 1\,500 & 12.9 & 1.27 & 225.1 &  \\
+\bottomrule
+\end{tabular}
+\end{table}

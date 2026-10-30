@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-30T08:01:16Z",
+  "hydroflex": "0.1.0",
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.5.4",
+  "pandas": "3.1.0",
+  "scipy": "1.18.1",
+  "highspy": "",
+  "pypsa": "1.4.0",
+  "git_commit": "dcf1400ba3a3136bfd86b059f132719a732966e7",
+  "random_seeds": {
+    "profiles": "20260101 + year",
+    "synthetic_fallback": 7
+  },
+  "timings_s": {},
+  "workers": 2,
+  "data_label": "PV/wind: weather-derived from NASA POWER (not measured output) \u00b7 inflows: reconstructed from NASA POWER precipitation (not gauged) \u00b7 demand & prices: SYNTHETIC RESEARCH DEMONSTRATION DATA \u2014 NOT OBSERVED GRID OPERATIONS",
+  "synthetic_label": "SYNTHETIC RESEARCH DEMONSTRATION DATA \u2014 NOT OBSERVED GRID OPERATIONS"
+}

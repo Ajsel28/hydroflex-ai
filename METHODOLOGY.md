@@ -44,7 +44,7 @@ L_s = Σ_t Δt ( p_m m − ρ p_m y + VOLL u + c_h h + c_deg d ) / 1000
   The live API uses 4 weeks.
   - *Why a water value:* an earlier version pinned V_T ≥ V_target (hard boundary) and recomputed boundaries per
     fleet. Re-evaluating plans with full-year chronology showed that this created spurious scarcity in sampled weeks
-    and overstated expected cost by 1–18 MEUR/yr. With the water value the error falls to about 2–9 MEUR/yr and the
+    and overstated expected cost by 0.6–20.4 MEUR/yr. With the water value the absolute error is 1.7–10.0 MEUR/yr (7 plans) and the
     ranking of the strategies tested matches chronology (`exp-H-chronological-check`; superseded hard-boundary
     artefacts kept in `results/superseded/`).
 - The resolution study quantifies the downward bias in storage value at 2, 3 and 6 h steps.

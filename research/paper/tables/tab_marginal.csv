@@ -1,0 +1,19 @@
+Resource,Scenario,Unit,Delta^+,Delta^-,Dual,Dual valid,Ann. cost
+battery_energy,normal,MWh,2.317495,3.007422,2.593306,True,29.762653
+battery_power,normal,MW,12.68267,16.2106,14.467403,True,10.109597
+solar_pv,normal,MW,139.697625,139.969013,139.834219,True,80.109078
+wind,normal,MW,92.772268,,92.885979,False,132.656811
+import_capacity,normal,MW,1.662621,2.66047,2.147996,True,30.003656
+reservoir_volume,normal,hm3,0.0,0.0,0.0,True,
+battery_energy,severe_drought,MWh,3.070873,4.105418,3.335098,True,29.762653
+battery_power,severe_drought,MW,15.498733,20.273125,18.587969,True,10.109597
+solar_pv,severe_drought,MW,145.602052,146.097476,145.844871,True,80.109078
+wind,severe_drought,MW,99.190897,,99.346113,False,132.656811
+import_capacity,severe_drought,MW,7.513123,11.206663,9.33857,True,30.003656
+reservoir_volume,severe_drought,hm3,0.0,0.0,0.0,True,
+battery_energy,compound_shock,MWh,4.081738,5.404761,4.560949,True,29.762653
+battery_power,compound_shock,MW,8.224756,11.70771,10.035816,True,10.109597
+solar_pv,compound_shock,MW,314.205836,322.089262,318.146036,True,80.109078
+wind,compound_shock,MW,201.772719,,202.543933,False,132.656811
+import_capacity,compound_shock,MW,153.500833,197.377693,174.543586,True,30.003656
+reservoir_volume,compound_shock,hm3,0.0,0.0,0.0,True,

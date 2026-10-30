@@ -72,7 +72,7 @@ All entries are written during the build. Times are local (session date 2026-10-
    representative-week approximation error.
 5. **Second methodological correction (water values).** The full-year chronological check (hard, fleet-independent
    boundaries) showed: no unserved energy in any plan chronologically, but the representative-week model overstated
-   expected cost by 0.6–17.5 MEUR/yr and produced spurious shortages in sampled weeks. Chronologically, the
+   expected cost by 0.6–20.4 MEUR/yr and produced spurious shortages in sampled weeks. Chronologically, the
    PV-only plan beat the "robust" battery plan on both expected cost and CVaR — the battery's tail-risk benefit was
    an artefact of rigid week boundaries. Fix: the end-of-week volume is valued at the coarse annual run's marginal
    water value (dual of the water balance) instead of being pinned. Spot check (expected total cost, MEUR/yr;

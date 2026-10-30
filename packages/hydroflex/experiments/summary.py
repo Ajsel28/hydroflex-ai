@@ -9,9 +9,15 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from hydroflex.experiments.run_all import EXP, save
+from hydroflex.experiments.run_all import OUT as EXP
+from hydroflex.experiments.run_all import save
 
 TWh = 1e6
+
+
+def _z(d: dict) -> dict:
+    """Round tiny negative solver noise (e.g. -1e-9) to zero for display."""
+    return {k: (0.0 if abs(v) < 0.5 else v) for k, v in d.items()}
 
 
 def load(n: str) -> dict | None:
@@ -144,7 +150,7 @@ def main() -> None:
                    "configuration": "deterministic, normal scenario, 8 representative weeks, budgets 0–2000 MEUR",
                    "finding": "Optimal additions by budget: " + "; ".join(
                        f"{r['budget_meur']:.0f} MEUR → PV {r['additions']['pv']:.0f}, wind {r['additions']['wind']:.0f} MW, "
-                       f"battery {r['additions']['bp']:.0f} MW/{r['additions']['be']:.0f} MWh" for r in rows) + ".",
+                       f"battery {_z(r['additions'])['bp']:.0f} MW/{_z(r['additions'])['be']:.0f} MWh" for r in rows) + ".",
                    "supported": None, "metrics": {str(r["budget_meur"]): r["additions"] for r in rows},
                    "limitations": "Results depend on the cost assumptions and on representative-week sampling."})
     I_ = load("ref-I-stochastic")
@@ -154,13 +160,13 @@ def main() -> None:
                    "hypothesis": "A stochastic, risk-aware plan reduces expected cost and tail risk relative to planning "
                                  "for normal conditions.",
                    "configuration": "5 scenarios, 8 weeks, budget 500 MEUR, CVaR α=0.9, λ=1",
-                   "finding": f"Risk-adjusted VSS = {c['vss_keur_annualised'] / 1e3:.1f} MEUR/yr. The stochastic plan costs "
-                              f"{c['expected_cost_premium_keur_annualised'] / 1e3:+.1f} MEUR/yr in expected cost (price of risk aversion) "
+                   "finding": f"Risk-adjusted VSS = {(c['vss_keur_annualised'] if abs(c['vss_keur_annualised']) > 50 else 0.0) / 1e3:.1f} MEUR/yr. The stochastic plan costs "
+                              f"{(c['expected_cost_premium_keur_annualised'] if abs(c['expected_cost_premium_keur_annualised']) > 50 else 0.0) / 1e3:+.1f} MEUR/yr in expected cost (price of risk aversion) "
                               f"and lowers CVaR(0.9) of operating cost from {(c['eev_cvar_keur_annualised'] or 0) / 1e3:.1f} to "
                               f"{c['rp_cvar_keur_annualised'] / 1e3:.1f} MEUR/yr. Stochastic additions: "
-                              + ", ".join(f"{k} {v:.0f}" for k, v in I_["additions"].items())
+                              + ", ".join(f"{k} {v:.0f}" for k, v in _z(I_["additions"]).items())
                               + "; deterministic (normal-year) additions: "
-                              + ", ".join(f"{k} {v:.0f}" for k, v in c["deterministic_plan_additions"].items()) + ".",
+                              + ", ".join(f"{k} {v:.0f}" for k, v in _z(c["deterministic_plan_additions"]).items()) + ".",
                    "supported": c["vss_keur_annualised"] > 1.0 and (c.get("cvar_reduction_keur_annualised") or 0) > 0,
                    "metrics": {k: c.get(k) for k in ("vss_keur_annualised", "expected_cost_premium_keur_annualised",
                                                       "rp_cvar_keur_annualised", "eev_cvar_keur_annualised",
@@ -181,6 +187,26 @@ def main() -> None:
                                     (r["fd_right_keur_per_unit_yr"] - 1e-3 <= r["dual_keur_per_unit_yr"] <= r["fd_left_keur_per_unit_yr"] + 1e-3)
                                     for r in J["rows"] if r["dual_reliable"]),
                    "metrics": {}, "limitations": "Local values around one fleet; not valid for large capacity changes."})
+    I2, I3 = load("exp-I2-conditions"), load("exp-I2-chronological-check")
+    if I2:
+        r = next(x for x in I2["rows"] if x["export_capacity_mw"] == 300 and x["budget_meur"] == 1500 and x["lambda"] == 1.0)
+        txt = ("With export capacity 300 MW, budget 1500 MEUR and λ=1 the stochastic plan adds "
+               + ", ".join(f"{k} {v:.0f}" for k, v in _z(r["rp_additions"]).items()) + " vs deterministic "
+               + ", ".join(f"{k} {v:.0f}" for k, v in _z(r["det_additions"]).items())
+               + f"; risk-adjusted VSS {r['vss_keur_annualised'] / 1e3:.1f} MEUR/yr; CVaR(0.9) {r['eev_cvar_keur_annualised'] / 1e3:.0f} → "
+               f"{r['rp_cvar_keur_annualised'] / 1e3:.0f} MEUR/yr for {(r['rp_expected_cost_keur_annualised'] - r['eev_expected_cost_keur_annualised']) / 1e3:+.1f} MEUR/yr expected cost.")
+        if I3:
+            st, de = (next(x for x in I3["rows"] if x["plan"] == k) for k in ("stochastic_cvar", "deterministic"))
+            txt += (f" Full-year chronology: CVaR {de['chrono_cvar_opex_keur'] / 1e3:.1f} → {st['chrono_cvar_opex_keur'] / 1e3:.1f} "
+                    f"MEUR/yr for {(st['chrono_expected_total_keur'] - de['chrono_expected_total_keur']) / 1e3:+.1f} MEUR/yr expected cost.")
+        full = [x for x in I2["rows"] if x["export_capacity_mw"] == 900]
+        ex.append({"id": "I2", "title": "When stochastic planning changes the decision",
+                   "hypothesis": "With restricted exports, storage/hedging value becomes scenario-dependent and the stochastic "
+                                 "plan differs from the deterministic plan (VSS > 0).",
+                   "configuration": "export capacity 300 vs 900 MW; budgets 1000/1500 MEUR; λ = 0, 1",
+                   "finding": txt + f" With 900 MW export capacity VSS = {max(abs(x['vss_keur_annualised']) for x in full) / 1e3:.2f} MEUR/yr.",
+                   "supported": r["vss_keur_annualised"] > 1.0, "metrics": r,
+                   "limitations": "Two export levels and two budgets only; probabilities partly assumed."})
     K = load("exp-H-chronological-check")
     if K:
         rows = K["rows"]

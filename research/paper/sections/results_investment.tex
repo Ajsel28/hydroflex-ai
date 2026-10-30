@@ -1,0 +1,67 @@
+\subsection{Budget-constrained investment (Experiment H)}
+For the normal year, the deterministic optimum spends every budget level from 100 to 1{,}500~MEUR entirely on
+PV: 126, 315, 629, 944, 1{,}258 and 1{,}888~MW. At 2{,}000~MEUR the PV bound (+2{,}000~MW) binds and the
+budget does not. Neither wind nor storage enters at any budget. The budget shadow price falls from 0.070 to
+0.024~EUR of annual saving per euro of capital as PV grows. These are diminishing but still positive returns,
+and they are consistent with the PV marginal value of Experiment~J (140~kEUR/MW-yr against 80~kEUR/MW-yr of
+annualised cost). The result reflects three assumptions: exports absorb midday surplus at 85\% of the import
+price, there is no reserve requirement, and wind capacity factors are about 0.11 from coarse reanalysis.
+Section~\ref{sec:sensitivity} tests the first of these.
+
+\subsection{Deterministic versus stochastic planning (Experiment I)}
+The two-stage programme has five scenarios, eight hourly weeks each, a 500~MEUR budget and CVaR at $\alpha=0.9$.
+For every risk weight tested ($\lambda\in\{0,0.25,1,4\}$) it selects the \emph{same} portfolio as the
+deterministic normal-year plan: +629~MW of PV, with no wind and no storage (Table~\ref{tab:risk-sweep}). The same
+holds at a 1{,}500~MEUR budget. Each wait-and-see problem also chooses this plan, so the value of the stochastic
+solution and the expected value of perfect information are both zero to solver precision
+(Table~\ref{tab:stochastic}). CVaR$_{0.9}$ of operating cost is 397~MEUR/yr for both plans. Hypothesis~I is
+therefore \textbf{not supported} under the base assumptions. PV is a \emph{no-regret} investment in every
+scenario. Its value is set mainly by the import price, and it rises under stress. The budget binds before any
+resource whose value depends on the scenario becomes competitive. The stochastic machinery still answers
+question~6 of the study: under these assumptions, deterministic planning for an average year is not
+penalised. One qualification matters. None of the five planning scenarios, the compound shock included
+(70\% availability), reaches the import-availability regime of $\le$50\% in which shortages occur and
+batteries become valuable (Sections~\ref{sec:results} and~\ref{sec:sensitivity}). A scenario set with even a
+small probability of that regime could change the plan, and this is a priority for future work.
+
+\IfFileExists{tables/tab_stochastic.tex}{\input{tables/tab_stochastic}}{}
+
+\input{sections/results_i2}
+
+\subsection{Investment frontier}
+Figure~\ref{fig:frontier} and Table~\ref{tab:strategies} compare the required strategies, the budget sweep and
+the stochastic plans on equal terms, using the same representative-week evaluation. At 500~MEUR the strategies
+rank as follows by expected total annualised cost: solar (70.9~MEUR/yr; identical to the coordinated and
+climate-robust optima), baseline (109.4), wind (112.1) and battery-only (164.9). The battery-only plan has the
+highest cost and the highest imports, because arbitrage increases gross imports. Across budgets, larger PV
+additions lower both expected cost and imports. The non-dominated set in (expected cost, expected imports)
+therefore collapses to the largest-PV plan, and the trade-off appears only in capital spent versus imports
+(\texttt{pareto\_capex\_imports} in the artefact). We report this degenerate frontier as it is, rather than
+constructing an artificial trade-off.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig08_investment_frontier.pdf}
+\caption{(a) Strategies in the plane of expected total annualised cost and expected imports, evaluated with the
+same representative-week model over five scenarios. Outlined points are non-dominated. (b) Total annualised cost
+of the required strategies A--F in each scenario.}
+\label{fig:frontier}
+\end{figure}
+
+\input{tables/tab_strategies}
+
+\subsection{Validity of the representative-week approximation}
+\label{sec:chrono}
+Seven plans were re-evaluated with full-year chronological hourly dispatch on all five scenarios. With the
+water-value boundary, the representative-week model's expected total cost differs from chronology by 1.7 to
+10.0~MEUR/yr in absolute terms. It overstates the cost of the PV plans by 4.2--8.7~MEUR/yr and understates the
+wind plan by 10.0~MEUR/yr. Both models find no unserved energy for any plan, and the strategies rank in the
+same order (ties between identical plans aside). An earlier variant pinned each week's terminal volume
+($V_T\ge\bar V^T$). That variant overstated cost by up to 20.4~MEUR/yr and produced spurious shortages in the
+sampled drought weeks. Those shortages made a PV--battery portfolio look better on tail risk, but full
+chronology showed this to be an artefact: the PV-only plan had lower expected cost (66.7 vs 76.3~MEUR/yr) and
+lower CVaR (443.5 vs 455.7~MEUR/yr). We report this as a methodological finding. How the seasonal boundary of a
+representative period is treated can change the investment recommendation, and validation against full
+chronology should be routine.
+
+\IfFileExists{tables/tab_chrono.tex}{\input{tables/tab_chrono}}{}

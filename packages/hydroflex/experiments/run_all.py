@@ -420,6 +420,38 @@ def exp_I2() -> None:
                                "rows": rows})
 
 
+def exp_I3() -> None:
+    """Full-year chronological check of the I2 plans that differ (export 300 MW, budget 1500, lambda 1)."""
+    if cached("exp-I2-chronological-check"):
+        return
+    d = cached("exp-I2-conditions")
+    if not d:
+        return
+    from hydroflex.optimization.model import cvar_discrete
+
+    row = next(r for r in d["rows"] if r["export_capacity_mw"] == 300 and r["budget_meur"] == 1500 and r["lambda"] == 1.0)
+    scen = _scen_set()
+    ann = TechnologyCosts().annualised_keur_per_unit()
+    out = []
+    for tag, adds in (("stochastic_cvar", row["rp_additions"]), ("deterministic", row["det_additions"])):
+        flt = fleet(pv=300 + adds["pv"], wind=adds["wind"], bp=adds["bp"], be=adds["be"], export_capacity_mw=300.0)
+        res = pmap([job(f"{tag}|{s.key}", s.model_copy(update={"probability": 1.0}), flt) for s in scen])
+        opex = np.array([r["metrics"]["opex_keur_annualised"] for r in res])
+        probs = np.array([s.probability for s in scen])
+        capex = sum(ann[{"pv": "pv", "wind": "wind", "bp": "battery_power", "be": "battery_energy"}[k]] * adds[k]
+                    for k in ("pv", "wind", "bp", "be"))
+        rk = cvar_discrete(opex, probs, 0.9)
+        out.append({"plan": tag, "additions": adds, "chrono_expected_total_keur": float(probs @ opex) + capex,
+                    "chrono_cvar_opex_keur": rk["cvar_keur"], "capex_annualised_keur": capex,
+                    "chrono_by_scenario_opex_keur": {s.key: float(v) for s, v in zip(scen, opex, strict=True)},
+                    "chrono_expected_ens_mwh": float(probs @ np.array([r["metrics"]["ens_mwh"] for r in res])),
+                    "chrono_expected_curtailment_mwh": float(probs @ np.array(
+                        [r["metrics"]["pv_curtail_mwh"] + r["metrics"]["wind_curtail_mwh"] for r in res]))})
+    save("exp-I2-chronological-check", {"kind": "validation", "title": "Chronological check of the I2 plans "
+                                        "(export 300 MW, budget 1500 MEUR, CVaR λ=1)", "rows": out,
+                                        "representative_week_row": row})
+
+
 def exp_K() -> None:
     """Re-evaluate key plans with full-year chronological hourly dispatch (no representative-week sampling)."""
     if cached("exp-H-chronological-check"):
@@ -650,7 +682,7 @@ def manifest() -> None:
         "workers": WORKERS, "data_label": DATA_NOTE, "synthetic_label": SYNTHETIC_LABEL}, indent=2), encoding="utf-8")
 
 
-STAGES = {"A": exp_payloads, "C": exp_C, "D": exp_D, "E": exp_E, "F": exp_F, "G": exp_G, "H": exp_H_I, "I2": exp_I2, "K": exp_K,
+STAGES = {"A": exp_payloads, "C": exp_C, "D": exp_D, "E": exp_E, "F": exp_F, "G": exp_G, "H": exp_H_I, "I2": exp_I2, "I3": exp_I3, "K": exp_K,
           "J": exp_J, "S": exp_sensitivity, "R": exp_resolution, "V": exp_validation}
 
 

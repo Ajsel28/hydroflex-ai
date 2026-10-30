@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Solver diagnostics (HiGHS via highspy) for representative problems.}
+\label{tab:solver}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Problem & Method & Vars & Rows & Non-zeros & Solve (s) & Simplex it. & IPM it. & Status \\
+\midrule
+Annual dispatch, hourly & choose & 105\,128 & 105\,126 & 306\,611 & 18.10 & 28\,525 & 0 & Optimal \\
+Stochastic, 8 weeks × 5 scen. & simplex & 80\,732 & 80\,847 & 269\,256 & 14.10 & 41\,016 & 0 & Optimal \\
+Investment, 8 weeks, normal & simplex & 16\,150 & 16\,170 & 47\,126 & 0.87 & 8\,275 & 0 & Optimal \\
+\bottomrule
+\end{tabular}
+\end{table}

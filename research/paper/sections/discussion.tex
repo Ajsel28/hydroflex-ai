@@ -1,0 +1,53 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Drought as financial risk, interconnection as reliability risk.} The clearest result is a separation
+of risks. With the interconnector available, even a 40\% inflow reduction is met entirely by imports. The cost
+of drought is financial: operating cost rises by 284~MEUR/yr between the normal and the severe-drought year.
+Unserved energy appears only when transfer availability falls to about half, and it is energy-limited.
+Short-duration storage can therefore reduce it only partially (13\% at 50\% availability). At an assumed VOLL of
+5{,}000~EUR/MWh, however, even that partial reduction is worth more than the battery costs. Batteries thus
+earn their keep here as reliability assets in joint stress events, not as arbitrageurs. This agrees with the concern of van Vliet et
+al.~\cite{vanvliet2016vulnerability} that climate impacts on water-dependent generation are partly
+compensated by trade and partly transmitted to neighbours. It also suggests that, for Albania, the joint
+probability of domestic drought and reduced regional export capacity deserves more attention than domestic
+drought alone. Because Balkan hydro systems share weather, this joint risk is plausible. Our scenario
+probabilities for it are assumed, not estimated.
+
+\paragraph{Solar as a no-regret option, conditional on export.} Under the base assumptions, PV is worth about
+1.7$\times$ its annualised cost at the margin. It dominates all other investments at every budget and in every
+scenario, which is why VSS is zero. Two mechanisms drive this. First, in a reservoir system PV saves water,
+which the reservoir then moves to high-price hours, so PV inherits part of the reservoir's flexibility value.
+Second, surplus PV can be exported at 85\% of the import price. The decline of renewable market value with
+penetration described by Hirth~\cite{hirth2013market} is therefore weak here, but only because the export
+route is assumed to absorb the surplus. When exports are restricted (Experiment~I2), this conclusion changes.
+That restriction is the condition under which planning for uncertainty starts to matter.
+
+\paragraph{Storage: timing, not volume.} Batteries reduce cost by shifting energy in time. In doing so they
+\emph{increase} gross imports, by importing cheaply and serving the evening peak. Policy goals stated as
+``reducing import dependence'' and ``reducing system cost'' can therefore point in different directions for
+storage. Arbitrage alone does not recover battery costs here: savings are 13--27\% of annualised cost across the tested sizes and years. The
+economic case for batteries rests instead on avoided shortage in joint drought and import-stress events
+(Section~\ref{sec:sensitivity}), and so on how likely those events are and what VOLL is assumed.
+The marginal analysis shows, however, that discharge power is worth more than its cost once some energy
+capacity exists. This points to shorter-duration systems and to the reserve and ancillary services that the
+model omits \cite{lund2015flexibility,kondziella2016flexibility}. The reservoir already supplies long-duration
+flexibility: additional reservoir \emph{volume} has zero marginal value in every case, because annual inflow,
+not storage size, is the binding resource.
+
+\paragraph{Methodological lessons.} Two modelling choices changed answers by more than many of the parameter
+uncertainties. First, temporal resolution: at 6-hourly steps battery value nearly vanishes and stochastic
+planning had nothing to choose between (Section~\ref{sec:sensitivity}), consistent with
+Poncelet et al.~\cite{poncelet2016temporal}. Second, how the boundaries of representative periods are handled
+for a seasonal store. Pinning each week's terminal volume created spurious scarcity. That made a battery look
+valuable for tail risk and reversed the ranking of two plans compared with full chronology. Valuing the end
+volume at the coarse annual run's water value, a single-cut future-cost function as in SDDP
+\cite{pereira1991sddp}, removed the artefact. This is a concrete example of the seasonal-storage problem in
+representative-period models described by Kotzur et al.~\cite{kotzur2018seasonal}. Our recommendation is that
+studies of hydro-dominated systems validate their period selection against full chronology, as we do here.
+
+\paragraph{Model implications versus policy.} These are implications of a single-node model with synthetic
+demand and prices. They are not recommendations for Albanian policy. A credible policy analysis would need
+observed hourly load (ENTSO-E), regional price and transfer-capacity data, calibrated hydrology and a network
+representation. The open pipeline is designed so that each of these can be substituted without code changes
+to the optimisation core.
