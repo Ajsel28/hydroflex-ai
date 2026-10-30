@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-
 from hydroflex.climate.scenarios import PRESETS
 from hydroflex.config import InvestmentOptions, SystemParams
 from hydroflex.optimization.model import solve

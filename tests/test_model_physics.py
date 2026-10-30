@@ -3,7 +3,6 @@
 import numpy as np
 import pytest
 from conftest import toy_input, toy_scenario
-
 from hydroflex.config import InvestmentOptions, SystemParams, TechnologyCosts, crf
 from hydroflex.optimization.model import COST_KEY, INVESTABLE, RiskOptions, cvar_discrete, solve
 
@@ -96,7 +95,7 @@ def test_drought_never_creates_impossible_hydro():
     for inflow in (0.8, 0.2, 0.0):
         p = SystemParams(min_release_m3s=0)
         r = solve(toy_input(scen=[toy_scenario(inflow=inflow)], params=p))
-        ts, m = _ts(r), r.scenario_results[0]
+        ts, _m = _ts(r), r.scenario_results[0]
         released = ts["release_hm3_h"].sum() + ts["spill_hm3_h"].sum()
         # terminal V_T >= V_0  =>  total release cannot exceed total inflow
         assert released <= ts["inflow_hm3_h"].sum() + TOL

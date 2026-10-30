@@ -93,3 +93,70 @@ def nested_boundary(cfg: RunConfig, spec: ScenarioSpec, df: pd.DataFrame, coarse
 def run(cfg: RunConfig, keep_timeseries: bool = True) -> tuple[ModelResult, ModelInput, str]:
     mi, mode, _ = make_input(cfg)
     return solve(mi, keep_timeseries=keep_timeseries), mi, mode
+
+
+# ------------------------------------------------------------------------------------------------
+# Representative-week stochastic programme with nested seasonal reservoir boundaries
+# ------------------------------------------------------------------------------------------------
+REP_WEEK_START_DAYS = (7, 52, 98, 143, 189, 234, 280, 325)  # systematic sample, every ~45.6 days
+REP_WEEK_START_DAYS_4 = (14, 105, 196, 287)                  # 4-week variant for interactive (live) runs
+
+
+def make_repweek_input(cfg: RunConfig, week_start_days: tuple[int, ...] = REP_WEEK_START_DAYS,
+                       boundary_capacity: dict[str, float] | None = None, coarse_h: int = 6) -> ModelInput:
+    """Each (scenario s, week w) is a member of group s with probability pi_s / n_weeks.
+
+    Hourly chronology inside every week (battery cycling is resolved); reservoir volume at the start and end
+    of each week comes from a coarse full-year chronological run of the same scenario (seasonal coupling).
+    ``boundary_capacity`` sets the fleet used in that coarse run (pass the investment result for a second pass).
+    """
+    frames, _, _ = scenario_frames(cfg)
+    members = []
+    bcfg = RunConfig(scenarios=cfg.scenarios, params=cfg.params, costs=cfg.costs, fixed_capacity=boundary_capacity
+                     or cfg.fixed_capacity, year=cfg.year)
+    for spec, df in zip(cfg.scenarios, frames, strict=True):
+        V = _coarse_trajectory(bcfg, spec, df, coarse_h)
+        for wi, d0 in enumerate(week_start_days):
+            h0 = d0 * 24
+            w = _window(df, h0, 168, 1)
+            sd = ScenarioData.from_frame(w, f"{spec.key}@w{wi}", spec.label, spec.probability / len(week_start_days),
+                                         cfg.params)
+            sd.group = spec.key
+            sd.v0_hm3 = float(V[h0 // coarse_h])
+            sd.v_terminal_hm3 = float(V[min((h0 + 168) // coarse_h, len(V) - 1)])
+            members.append(sd)
+    ts = _window(frames[0], week_start_days[0] * 24, 168, 1).index
+    return ModelInput(params=cfg.params, costs=cfg.costs, invest=cfg.invest, scenarios=members, dt=1.0, timestamps=ts,
+                      risk=cfg.risk, fixed_capacity=cfg.fixed_capacity, time_limit=cfg.time_limit)
+
+
+def _coarse_trajectory(cfg: RunConfig, spec: ScenarioSpec, df: pd.DataFrame, coarse_h: int) -> np.ndarray:
+    yr = aggregate(df, coarse_h)
+    sd = ScenarioData.from_frame(yr, spec.key, spec.label, 1.0, cfg.params)
+    mi = ModelInput(params=cfg.params, costs=cfg.costs, invest=InvestmentOptions(enabled=False), scenarios=[sd],
+                    dt=float(coarse_h), fixed_capacity=cfg.fixed_capacity, time_limit=120)
+    res = solve(mi)
+    if not res.optimal:
+        raise RuntimeError(f"coarse boundary run infeasible for {spec.key}: {res.status}")
+    return np.concatenate([[res.scenario_results[0]["res_v_start_hm3"]], res.timeseries[spec.key]["reservoir_hm3"]])
+
+
+def run_repweeks(cfg: RunConfig, passes: int = 2, keep_timeseries: bool = False,
+                 weeks: tuple[int, ...] = REP_WEEK_START_DAYS) -> tuple[ModelResult, ModelInput, dict]:
+    """Solve the representative-week programme; pass 2 recomputes reservoir boundaries with the pass-1 fleet."""
+    info: dict = {"passes": [], "week_start_days": list(weeks)}
+    cap = None
+    res = mi = None
+    for k in range(passes):
+        mi = make_repweek_input(cfg, week_start_days=weeks, boundary_capacity=cap)
+        res = solve(mi, keep_timeseries=keep_timeseries)
+        info["passes"].append({"pass": k + 1, "status": res.status, "objective_keur": res.objective_keur,
+                               "additions": res.additions})
+        if not res.optimal or cfg.fixed_capacity:
+            break
+        new_cap = {kk: res.capacities[kk] for kk in ("pv", "wind", "bp", "be")}
+        if cap is not None and all(abs(new_cap[kk] - cap[kk]) < 1.0 for kk in new_cap):
+            break
+        cap = new_cap
+    assert res is not None and mi is not None
+    return res, mi, info

@@ -1,0 +1,16 @@
+{
+  "dataset_id": "natural_earth_admin0_50m",
+  "name": "Natural Earth Admin 0 Countries 1:50m (v5.1.2)",
+  "provider": "Natural Earth (naturalearthdata.com)",
+  "source_url": "https://github.com/nvkelso/natural-earth-vector/blob/v5.1.2/geojson/ne_50m_admin_0_countries.geojson",
+  "date_accessed": "2026-10-29",
+  "geographic_coverage": "global; subset of Western Balkans saved to data/processed/balkans_ne50m.geojson",
+  "time_coverage": "static",
+  "temporal_resolution": "n/a",
+  "units": {
+    "coordinates": "WGS84 degrees"
+  },
+  "license": "Public domain (Natural Earth)",
+  "processing": "Subset to Albania and neighbours for maps",
+  "nature": "observed (cartographic)"
+}

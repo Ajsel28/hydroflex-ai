@@ -4,7 +4,6 @@ import json
 
 import numpy as np
 import pytest
-
 from hydroflex import DATA_DIR
 from hydroflex.climate.scenarios import PRESETS, apply_scenario, stochastic_scenario_set
 from hydroflex.data.loader import aggregate, load_profiles, synthetic_profiles

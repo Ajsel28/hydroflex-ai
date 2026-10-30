@@ -1,0 +1,6 @@
+{
+  "$comment": "Static frontend only. The optimisation API must run on a persistent Python host (see Dockerfile.api). Set VITE_API_BASE at build time.",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

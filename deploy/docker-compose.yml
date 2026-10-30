@@ -1,0 +1,6 @@
+services:
+  api:
+    build: { context: .., dockerfile: Dockerfile.api }
+    ports: ["8000:8000"]
+    environment:
+      HYDROFLEX_CORS_ORIGINS: "http://localhost:4173,http://localhost:5173"

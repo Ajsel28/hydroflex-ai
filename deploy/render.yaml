@@ -1,0 +1,25 @@
+# Render.com blueprint (example). Requires a Render account — not deployed by the build.
+services:
+  - type: web
+    name: hydroflex-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    healthCheckPath: /api/health
+    envVars:
+      - key: HYDROFLEX_CORS_ORIGINS
+        value: https://YOUR-FRONTEND-DOMAIN
+      - key: HYDROFLEX_RATE_LIMIT
+        value: "12"
+  - type: web
+    name: hydroflex-web
+    runtime: static
+    rootDir: apps/web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        value: https://YOUR-API-DOMAIN
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -58,6 +58,11 @@ class ScenarioData:
     export_price_ratio: float = 0.85
     v0_hm3: float | None = None          # per-scenario boundary (nested runs); overrides ModelInput
     v_terminal_hm3: float | None = None
+    group: str | None = None             # members of a group (e.g. representative weeks) share one CVaR loss
+
+    @property
+    def group_key(self) -> str:
+        return self.group or self.key
 
     @classmethod
     def from_frame(cls, df: pd.DataFrame, key: str, label: str, probability: float,
@@ -152,9 +157,11 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
             hi = ex[k] + maxadd[k]
         if mi.fixed_capacity and k in mi.fixed_capacity:
             lo = hi = float(mi.fixed_capacity[k])
-        cost = w * ann[COST_KEY[k]] if k in INVESTABLE else 0.0
+        # capex is charged on additions to the existing fleet (sunk) — only when the capacity is a decision;
+        # for fixed fleets it is a constant added in reporting (see solve()).
+        cost = w * ann[COST_KEY[k]] if (inv.enabled and k in INVESTABLE and lo < hi) else 0.0
         cap[k] = lp.var(f"cap_{k}", 1, lb=lo, ub=hi, cost=cost)[0]
-        lp.c0 -= cost * ex[k]  # existing fleet is sunk: only additions are costed
+        lp.c0 -= cost * ex[k]
     ix["cap"] = cap
     if inv.enabled and not mi.fixed_capacity:
         if inv.budget_meur is not None:
@@ -172,7 +179,8 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
     # ---------------- second stage -----------------------------------------------------------
     v0_default = mi.v0_hm3 if mi.v0_hm3 is not None else p.res_vmin_hm3 + p.res_v0_frac * (p.res_vmax_hm3 - p.res_vmin_hm3)
     sc_ix = []
-    risk_on = mi.risk.weight > 0 and S > 1
+    groups = _groups(mi)
+    risk_on = mi.risk.weight > 0 and len(groups) > 1
     if risk_on:
         zeta = lp.var("cvar_zeta", 1, lb=-INF, ub=INF, cost=mi.risk.weight)[0]
         ix["zeta"] = zeta
@@ -273,23 +281,75 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
         lp.coef(r, v["imp"], 1.0)
         lp.coef(r, cap["imp"], -s.import_availability)
         rows["imp_cap"] = r
-        # CVaR excess: phi_s - L_s + zeta >= 0
-        if risk_on:
-            phi = lp.var(pre + "cvar_phi", 1, cost=mi.risk.weight * pi / (1 - mi.risk.alpha))[0]
-            r = lp.rows_block(pre + "cvar", 1, 0.0, INF)
-            lp.coef(r, phi, 1.0)
-            lp.coef(r, ix["zeta"], 1.0)
-            unit = dt / 1000.0
-            lp.coef(r, v["imp"], -unit * s.import_price)
-            lp.coef(r, v["exp"], unit * s.import_price * s.export_price_ratio)
-            lp.coef(r, v["ens"], -unit * p.voll_eur_mwh)
-            lp.coef(r, v["hydro"], -unit * p.hydro_vom_eur_mwh)
-            lp.coef(r, v["dis"], -unit * p.battery_degradation_eur_mwh)
-            v["cvar_phi"] = np.array([phi])
-            rows["cvar"] = r
         sc_ix.append({"v": v, "rows": rows, "v0": v0, "vt": vt_target})
     ix["scen"] = sc_ix
+    # CVaR excess per scenario group g:  phi_g + zeta - sum_{s in g} (pi_s/pi_g) L_s >= 0
+    if risk_on:
+        unit = dt / 1000.0
+        for g, members in groups.items():
+            pig = sum(mi.scenarios[i].probability for i in members)
+            phi = lp.var(f"cvar_phi_{g}", 1, cost=mi.risk.weight * pig / (1 - mi.risk.alpha))[0]
+            r = lp.rows_block(f"cvar_{g}", 1, 0.0, INF)
+            lp.coef(r, phi, 1.0)
+            lp.coef(r, ix["zeta"], 1.0)
+            for i in members:
+                sd, v = mi.scenarios[i], sc_ix[i]["v"]
+                wgt = sd.probability / pig * unit
+                lp.coef(r, v["imp"], -wgt * sd.import_price)
+                lp.coef(r, v["exp"], wgt * sd.import_price * sd.export_price_ratio)
+                lp.coef(r, v["ens"], -wgt * p.voll_eur_mwh)
+                lp.coef(r, v["hydro"], -wgt * p.hydro_vom_eur_mwh)
+                lp.coef(r, v["dis"], -wgt * p.battery_degradation_eur_mwh)
     return lp, ix
+
+
+def _groups(mi: ModelInput) -> dict[str, list[int]]:
+    g: dict[str, list[int]] = {}
+    for i, s in enumerate(mi.scenarios):
+        g.setdefault(s.group_key, []).append(i)
+    return g
+
+
+_MAX_KEYS = ("max_balance_residual_mw", "max_soc_residual_mwh", "max_water_residual_hm3", "peak_shortfall_mw",
+             "price_max_eur_mwh")
+
+
+def aggregate_groups(scen_res: list[dict[str, Any]], mi: ModelInput) -> list[dict[str, Any]]:
+    """Combine member results (e.g. representative weeks) into one annualised record per scenario group.
+
+    Members of a group are equally weighted samples of the year. Extensive quantities (MWh, kEUR, hm3, hours,
+    cycles) are averaged over members and scaled by 8760 / (T*dt); intensive quantities are averaged; maxima
+    are maxima. ``*_annualised`` keys are averaged.
+    """
+    groups = _groups(mi)
+    ann = 8760.0 / (mi.T * mi.dt)
+    out = []
+    for g, members in groups.items():
+        rs = [scen_res[i] for i in members]
+        rec: dict[str, Any] = {"key": g, "label": mi.scenarios[members[0]].label,
+                               "probability": float(sum(r["probability"] for r in rs)), "n_members": len(rs)}
+        for k, v in rs[0].items():
+            if k in rec or not isinstance(v, int | float) or isinstance(v, bool):
+                continue
+            vals = np.array([r[k] for r in rs], dtype=float)
+            if k in _MAX_KEYS:
+                rec[k] = float(np.max(vals))
+            elif k.endswith("_annualised") or k in ("res_v_start_hm3", "res_v_end_hm3"):
+                rec[k] = float(np.mean(vals))
+            elif k == "res_v_min_hm3":
+                rec[k] = float(np.min(vals))
+            elif k.endswith(("_mwh", "_keur", "_hm3")) or k in ("lol_hours", "import_cap_binding_hours",
+                                                                 "res_hours_at_min", "battery_cycles"):
+                rec[k] = float(np.mean(vals) * ann)
+            else:
+                rec[k] = float(np.mean(vals))
+        d = rec.get("demand_mwh", 0.0)
+        if d:
+            rec["ens_share"] = rec["ens_mwh"] / d
+            rec["import_share"] = rec["imports_mwh"] / d
+            rec["domestic_supply_share"] = 1 - (rec["imports_mwh"] + rec["ens_mwh"]) / d
+        out.append(rec)
+    return out
 
 
 def _scenario_metrics(mi: ModelInput, s: ScenarioData, x: np.ndarray, v: dict, sol: LPSolution, rows: dict,
@@ -376,7 +436,13 @@ def solve(mi: ModelInput, keep_timeseries: bool = True) -> ModelResult:
     if abs(sum(s.probability for s in mi.scenarios) - 1.0) > 1e-6:
         raise ValueError("scenario probabilities must sum to 1")
     lp, ix = build(mi)
-    method = "ipm" if (mi.invest.enabled and not mi.fixed_capacity) or len(mi.scenarios) > 1 else "choose"
+    # Grouped (representative-week) problems: dense first-stage columns stall IPM -> dual simplex.
+    if any(s.group for s in mi.scenarios):
+        method = "simplex"
+    elif (mi.invest.enabled and not mi.fixed_capacity) or len(mi.scenarios) > 1:
+        method = "ipm"
+    else:
+        method = "choose"
     sol = lp.solve(time_limit=mi.time_limit, method=method)
     warnings: list[str] = []
     solver = {"name": "HiGHS", "version": sol.solver_version, "status": sol.status, "method": method,
@@ -398,6 +464,9 @@ def solve(mi: ModelInput, keep_timeseries: bool = True) -> ModelResult:
     ann = mi.costs.annualised_keur_per_unit()
     over = mi.costs.overnight_keur_per_unit()
     capex_h = sum(mi.horizon_weight * ann[COST_KEY[k]] * adds[k] for k in INVESTABLE)
+    # fixed-fleet runs (dispatch / plan evaluation) report the same capex for the additions they contain
+    if not (mi.invest.enabled and not mi.fixed_capacity):
+        sol.objective += capex_h
     scen_res, tss = [], {}
     for si, s in enumerate(mi.scenarios):
         m, ts = _scenario_metrics(mi, s, x, ix["scen"][si]["v"], sol, ix["scen"][si]["rows"], capv)
@@ -415,10 +484,21 @@ def solve(mi: ModelInput, keep_timeseries: bool = True) -> ModelResult:
                             "(LP relaxation; energy dissipation through storage losses)")
     probs = np.array([r["probability"] for r in scen_res])
     keys = [k for k, val in scen_res[0].items() if isinstance(val, float) and k != "probability"]
+    grouped = any(s.group for s in mi.scenarios)
+    member_results = scen_res
+    if grouped:
+        scen_res = aggregate_groups(member_results, mi)
+        probs = np.array([r["probability"] for r in scen_res])
+        keys = [k for k, val in scen_res[0].items() if isinstance(val, float) and k != "probability"]
     expected = {k: float(np.dot(probs, [r[k] for r in scen_res])) for k in keys}
-    losses = np.array([r["opex_keur"] for r in scen_res])
+    # risk measure on group losses in horizon units (LP units)
+    gl = {g: sum(member_results[i]["probability"] * member_results[i]["opex_keur"] for i in idx) /
+          sum(member_results[i]["probability"] for i in idx) for g, idx in _groups(mi).items()}
+    losses = np.array([gl[r["key"]] for r in scen_res])
     alpha = mi.risk.alpha
-    risk = {"alpha": alpha, "lambda": mi.risk.weight, **cvar_discrete(losses, probs, alpha)}
+    risk = {"alpha": alpha, "lambda": mi.risk.weight, **cvar_discrete(losses, probs, alpha),
+            "units": "kEUR over the modelled horizon (divide by weight_of_year to annualise)"}
+    risk.update({f"{k}_annualised": v / mi.horizon_weight for k, v in cvar_discrete(losses, probs, alpha).items()})
     if "zeta" in ix:
         risk["zeta_lp_keur"] = float(x[ix["zeta"]])
     # duals / marginal values
@@ -437,9 +517,13 @@ def solve(mi: ModelInput, keep_timeseries: bool = True) -> ModelResult:
         # HiGHS: reduced cost d = c - A^T y. Operational value of one more unit of x_k is
         # -d(opex)/dx_k = (A^T y)_k restricted to second-stage rows = c_k - d_k - (first-stage rows)_k.
         op_val = (c_full[i] - cd[i]) - first_stage[k]
+        corner = capv[k] <= 1e-6 or (k == "bp" and capv["be"] <= 1e-6) or (k == "be" and capv["bp"] <= 1e-6)
         duals[f"marginal_value_{k}"] = {"per_unit_horizon_keur": float(op_val),
                                         "per_unit_annualised_keur": float(op_val / mi.horizon_weight),
-                                        "reduced_cost_keur": float(cd[i])}
+                                        "reduced_cost_keur": float(cd[i]),
+                                        "reliable": not corner,
+                                        "note": "degenerate corner (zero capacity): dual is an arbitrary subgradient; "
+                                                "use finite differences" if corner else "local subgradient"}
     if "budget_row" in ix:
         bd = float(sol.row_dual[ix["budget_row"]])
         duals["budget_shadow_price"] = {"keur_per_keur_overnight_horizon": -bd,
@@ -456,11 +540,11 @@ def solve(mi: ModelInput, keep_timeseries: bool = True) -> ModelResult:
 def cvar_discrete(losses: np.ndarray, probs: np.ndarray, alpha: float) -> dict[str, float]:
     """Exact VaR/CVaR of a discrete loss distribution (Rockafellar–Uryasev definition)."""
     order = np.argsort(losses)
-    l, p = losses[order], probs[order]
+    ls, p = losses[order], probs[order]
     cum = np.cumsum(p)
     k = int(np.searchsorted(cum, alpha - 1e-12))
-    k = min(k, len(l) - 1)
-    var = float(l[k])
-    cvar = var + float(np.sum(p * np.maximum(l - var, 0.0))) / (1 - alpha) if alpha < 1 else float(l.max())
+    k = min(k, len(ls) - 1)
+    var = float(ls[k])
+    cvar = var + float(np.sum(p * np.maximum(ls - var, 0.0))) / (1 - alpha) if alpha < 1 else float(ls.max())
     return {"var_keur": var, "cvar_keur": cvar, "expected_loss_keur": float(np.dot(probs, losses)),
-            "worst_loss_keur": float(l.max())}
+            "worst_loss_keur": float(ls.max())}
