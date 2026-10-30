@@ -32,7 +32,7 @@ Repository: a dedicated git repo in `hydroflex-ai/` (branch `main`). Nothing has
   Uncertainty, Research Notebook, About and Presentation Mode. It labels reference and live runs and always
   displays the synthetic-data label.
 - **Research outputs**:
-  - manuscript sources (`research/paper/`, about 8,500 words, 12 figures, 20 tables, 34 references);
+  - manuscript sources (`research/paper/`, about 8,500 words, 12 figures, 20 tables, 35 bibliography entries, 34 cited);
   - A0 poster PDF (`research/poster/HydroFlex_AI_Poster.pdf`);
   - `research/EXECUTIVE_SUMMARY.md` and `research/POLICY_BRIEF.md`;
   - the video package (`video/`).
