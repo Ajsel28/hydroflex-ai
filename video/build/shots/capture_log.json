@@ -1,0 +1,14 @@
+{
+  "05_lab_normal": {
+    "status": "HIGHS STATUS\nOptimal",
+    "wall_seconds": 5.161
+  },
+  "07_lab_severe": {
+    "status": "HIGHS STATUS\nOptimal",
+    "wall_seconds": 1.933
+  },
+  "08_lab_battery": {
+    "status": "HIGHS STATUS\nOptimal",
+    "wall_seconds": 1.421
+  }
+}

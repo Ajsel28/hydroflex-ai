@@ -1,0 +1,96 @@
+{
+  "annual": {
+    "normal": {
+      "net_imports_twh": 0.767892283418,
+      "opex_meur": 40.79716723,
+      "ens_mwh": 0.0,
+      "hydro_twh": 6.771764639915999
+    },
+    "severe": {
+      "net_imports_twh": 3.476598139385,
+      "opex_meur": 324.488118986,
+      "ens_mwh": 0.0,
+      "hydro_twh": 4.06305878395
+    }
+  },
+  "week": {
+    "normal": {
+      "imports_gwh": 2.016460529,
+      "cost_meur": -3.778905739,
+      "ens_mwh": 0.0
+    },
+    "severe_drought": {
+      "imports_gwh": 29.396044302,
+      "cost_meur": 1.399722605,
+      "ens_mwh": 0.0
+    },
+    "severe_drought_battery_300mw_1200mwh": {
+      "imports_gwh": 36.701966622,
+      "cost_meur": 1.048646723,
+      "ens_mwh": 0.0
+    }
+  },
+  "marginal": {
+    "pv_value": 139.833319,
+    "pv_cost": 80.10907750940193,
+    "imp_value_normal": 2.161545,
+    "imp_value_compound": 175.439263
+  },
+  "battery": {
+    "saving_meur": 9.822937185999999,
+    "cost_meur": 51.66408375540177
+  },
+  "shortage": {
+    "ens_gwh_ntc50": 310.71359582400004,
+    "saving_meur_ntc50": 199.788114235
+  },
+  "stochastic": {
+    "vss_meur": -0.0,
+    "scenarios": [
+      {
+        "label": "Wet year",
+        "p": 0.2217,
+        "opex_meur": -166.305701421
+      },
+      {
+        "label": "Normal",
+        "p": 0.3696,
+        "opex_meur": -36.222487095
+      },
+      {
+        "label": "Dry year",
+        "p": 0.2587,
+        "opex_meur": 74.93187376200001
+      },
+      {
+        "label": "Severe drought",
+        "p": 0.1,
+        "opex_meur": 233.060902478
+      },
+      {
+        "label": "Compound shock",
+        "p": 0.05,
+        "opex_meur": 561.530524839
+      }
+    ],
+    "cvar_meur": 397.295713658
+  },
+  "i2": {
+    "cvar_det": 282.69724586999996,
+    "cvar_stoch": 208.23303822,
+    "cost_det": 59.534302989000004,
+    "cost_stoch": 74.58729996999999,
+    "wind_added": 229.901713
+  },
+  "validation": {
+    "chrono_err_min": 1.6562707269999954,
+    "chrono_err_max": 10.01187947,
+    "pypsa_max_rel": 0.0
+  },
+  "resolution": {
+    "1h": 9.822937185999999,
+    "2h": 8.844204300000005,
+    "3h": 7.0404211600000055,
+    "6h": 1.290921653000005
+  }
+}

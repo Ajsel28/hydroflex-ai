@@ -1,0 +1,14 @@
+{
+  "file": "video\\HydroFlex_AI_Demo.mp4",
+  "bytes": 70630568,
+  "duration_s": 116.2,
+  "video_codec": "h264",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30.0,
+  "audio": "aac 44100 Hz",
+  "pix_fmt": "yuv420p",
+  "decoded_frames": 3486,
+  "input_frames": 3486,
+  "decode_errors": false
+}

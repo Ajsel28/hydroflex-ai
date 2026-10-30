@@ -69,9 +69,12 @@ def main() -> None:
             color="white", weight="bold", transform=hd.transAxes)
     hd.text(0.03, 0.2, "Ajsel Budlla  ·  Whitman College, Walla Walla, WA, USA  ·  HYDROFLEX AI — open-source research prototype",
             fontsize=28, color="#A5F3FC", transform=hd.transAxes)
-    hd.add_patch(Rectangle((0.885, 0.12), 0.09, 0.76, transform=hd.transAxes, fc="white", ec=CYAN, lw=3))
-    hd.text(0.93, 0.5, "QR code\nplaceholder\n(repository /\ndemo link)", transform=hd.transAxes, ha="center", va="center",
-            fontsize=16, color=MUTED)
+    qr = ROOT / "research" / "poster" / "qr_hydroflex.png"  # encodes https://hydroflex-ai.netlify.app (verified decode)
+    qa = fig.add_axes([0.895, 0.912, 0.07 * H / W, 0.07])
+    qa.imshow(mpimg.imread(qr), interpolation="nearest")
+    qa.set_axis_off()
+    hd.text(0.93, 0.04, "hydroflex-ai.netlify.app  ·  github.com/Ajsel28/hydroflex-ai", transform=hd.transAxes,
+            ha="center", va="bottom", fontsize=13, color="#A5F3FC")
 
     m, gap = 0.02, 0.015
     cw = (1 - 2 * m - gap) / 2

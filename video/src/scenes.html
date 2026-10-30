@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>HydroFlex AI demo composition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=block" rel="stylesheet" />
+<link rel="stylesheet" href="../../apps/web/node_modules/katex/dist/katex.min.css" />
+<script src="../../apps/web/node_modules/katex/dist/katex.min.js"></script>
+<script src="../build/scene_data.js"></script>
+<style>
+  :root { --bg:#050a13; --panel:#0b1422; --line:#1c2a3e; --ink:#e7eef8; --ink2:#a8b6c9; --ink3:#6f7f96;
+          --hydro:#22d3ee; --ror:#2dd4bf; --solar:#f5c542; --wind:#34d399; --batt:#a78bfa; --imp:#94a3b8;
+          --money:#f5b841; --risk:#c084fc; --warn:#f87171; }
+  html, body { margin:0; background:var(--bg); }
+  #stage { position:relative; width:1920px; height:1080px; overflow:hidden; background:
+    radial-gradient(1200px 700px at 78% 18%, rgba(34,211,238,.08), transparent 60%),
+    radial-gradient(900px 600px at 10% 90%, rgba(167,139,250,.07), transparent 60%), var(--bg);
+    font-family:'Inter Tight', 'Segoe UI', sans-serif; color:var(--ink); }
+  .grid { position:absolute; inset:0; background-image:linear-gradient(rgba(148,163,184,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,.05) 1px, transparent 1px); background-size:64px 64px; }
+  .scene { position:absolute; inset:0; opacity:0; }
+  .el { opacity:0; will-change:transform, opacity; }
+  .eyebrow { font-family:'JetBrains Mono', monospace; font-size:20px; letter-spacing:.22em; text-transform:uppercase; color:var(--hydro); }
+  .serif { font-family:'Newsreader', Georgia, serif; }
+  .mono { font-family:'JetBrains Mono', monospace; }
+  h1.title { font-size:150px; white-space:nowrap; font-weight:700; letter-spacing:-.03em; margin:0; line-height:.95; }
+  h1.title span { color:var(--hydro); }
+  .sub { font-size:40px; color:var(--ink2); font-weight:300; }
+  .card { background:linear-gradient(180deg, rgba(15,25,41,.92), rgba(9,16,28,.92)); border:1px solid var(--line);
+          border-radius:22px; box-shadow:0 30px 80px rgba(0,0,0,.45); }
+  .tag { display:inline-block; font-family:'JetBrains Mono', monospace; font-size:17px; padding:6px 14px; border-radius:999px;
+         border:1px solid rgba(245,184,65,.45); color:var(--money); background:rgba(245,184,65,.07); }
+  .shot { position:absolute; inset:0; opacity:0; overflow:hidden; background:var(--bg); }
+  .shot img { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; }
+  .lower { position:absolute; left:64px; bottom:56px; max-width:1180px; padding:22px 30px; opacity:0;
+           background:rgba(5,10,19,.86); border:1px solid rgba(34,211,238,.35); border-left:5px solid var(--hydro);
+           border-radius:14px; backdrop-filter:blur(8px); }
+  .lower .k { font-family:'JetBrains Mono', monospace; font-size:17px; letter-spacing:.16em; text-transform:uppercase; color:var(--hydro); }
+  .lower .t { font-size:34px; font-weight:500; margin-top:6px; line-height:1.25; }
+  .lower .n { font-size:19px; color:var(--ink3); margin-top:8px; font-family:'JetBrains Mono', monospace; }
+  .live { position:absolute; right:64px; top:48px; opacity:0; padding:10px 18px; border-radius:999px; font-family:'JetBrains Mono', monospace;
+          font-size:18px; background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.55); color:#6ee7b7; }
+  .ref { background:rgba(167,139,250,.12); border-color:rgba(167,139,250,.55); color:#c4b5fd; }
+  .big { font-family:'JetBrains Mono', monospace; font-size:78px; font-weight:600; letter-spacing:-.02em; }
+  .unit { font-size:28px; color:var(--ink3); margin-left:8px; }
+  .lbl { font-size:22px; color:var(--ink2); }
+  .foot { position:absolute; left:64px; bottom:40px; font-family:'JetBrains Mono', monospace; font-size:16px; color:var(--ink3); opacity:0; }
+  .katex { font-size:1.15em; color:var(--ink); }
+  .eq { font-size:27px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="grid"></div>
+
+  <!-- ===================== S1 OPENING 0–12 ===================== -->
+  <div class="scene" data-in="0" data-out="12">
+    <svg id="albania" class="el" data-a="fade" data-t="0.2" style="position:absolute; right:150px; top:150px;" width="560" height="800" viewBox="-20 -20 560 800"></svg>
+    <div style="position:absolute; left:120px; top:230px; width:1180px;">
+      <div class="eyebrow el" data-a="up" data-t="0.4">Open-source research prototype · 2026</div>
+      <h1 class="title el" data-a="up" data-t="0.9" style="margin-top:28px;">HYDROFLEX <span>AI</span></h1>
+      <div class="sub el" data-a="up" data-t="1.6" style="margin-top:28px;">Climate intelligence for resilient energy systems</div>
+      <div class="el" data-a="up" data-t="4.6" style="margin-top:70px; font-size:38px; line-height:1.4;">
+        <span style="color:var(--hydro); font-weight:600;">≈95%</span> of Albania's installed capacity is hydropower.<br/>
+        <span style="color:var(--ink2);">The Drin cascade alone — Fierza, Koman, Vau i Dejës — is </span><span class="mono" style="color:var(--hydro); white-space:nowrap;">1,350 MW</span>.
+      </div>
+      <div class="el" data-a="up" data-t="7.6" style="margin-top:34px; font-size:38px; line-height:1.4; color:var(--ink2);">
+        When rainfall fails, the grid must import.<br/><span style="color:var(--ink)">How should it plan for an uncertain climate?</span>
+      </div>
+      <div class="el" data-a="fade" data-t="5.0" style="margin-top:36px; font-family:'JetBrains Mono'; font-size:17px; color:var(--ink3);">Sources: IRENA Renewables Readiness Assessment Albania (2021) · KESH</div>
+    </div>
+  </div>
+
+  <!-- ===================== S2 MODEL 12–30 ===================== -->
+  <div class="scene" data-in="12" data-out="30">
+    <div style="position:absolute; left:120px; top:90px;">
+      <div class="eyebrow el" data-a="up" data-t="12.3">The research model</div>
+      <div class="serif el" data-a="up" data-t="12.6" style="font-size:66px; margin-top:16px;">One hourly optimisation, every flexibility resource</div>
+    </div>
+    <svg id="flows" class="el" data-a="fade" data-t="12.8" width="1920" height="1080" style="position:absolute; inset:0;"></svg>
+    <div class="card el" data-a="up" data-t="20.0" style="position:absolute; right:70px; top:290px; width:700px; padding:30px 34px;">
+      <div class="eyebrow" style="color:var(--ink3); font-size:16px;">Energy balance · every hour</div>
+      <div class="eq" id="eq1" style="margin-top:12px;"></div>
+      <div class="eyebrow" style="color:var(--ink3); font-size:16px; margin-top:26px;">Reservoir water balance</div>
+      <div class="eq" id="eq2" style="margin-top:12px;"></div>
+      <div class="eyebrow" style="color:var(--ink3); font-size:16px; margin-top:26px;">Battery state of charge</div>
+      <div class="eq" id="eq3" style="margin-top:12px;"></div>
+    </div>
+    <div class="el" data-a="up" data-t="24.5" style="position:absolute; right:70px; top:720px; width:700px; font-size:25px; color:var(--ink2); line-height:1.45;">
+      Linear programme solved with <b style="color:var(--ink)">HiGHS</b>, verified against an independent
+      <b style="color:var(--ink)">PyPSA</b> model (objectives agree to solver precision).
+    </div>
+  </div>
+
+  <!-- ===================== WEBSITE SHOTS (built in JS) ===================== -->
+  <div id="shots"></div>
+
+  <!-- ===================== C1 DROUGHT CARD 67–75 ===================== -->
+  <div class="scene" data-in="67" data-out="75">
+    <div style="position:absolute; left:120px; top:110px;">
+      <div class="eyebrow el" data-a="up" data-t="67.2">Drought experiment · verified model output</div>
+      <div class="serif el" data-a="up" data-t="67.5" style="font-size:64px; margin-top:14px;">Inflows −40%: the lights stay on, the bill does not</div>
+    </div>
+    <div class="card el" data-a="up" data-t="68.0" style="position:absolute; left:120px; top:330px; width:780px; height:520px; padding:40px;">
+      <div class="lbl">Full year · existing fleet</div>
+      <div style="display:flex; gap:60px; margin-top:28px;">
+        <div><div class="lbl">Net imports</div><div class="big"><span data-count="annual.normal.net_imports_twh" data-dec="2" data-t="68.4"></span><span class="unit">→</span></div></div>
+        <div><div class="lbl">&nbsp;</div><div class="big" style="color:var(--warn)"><span data-count="annual.severe.net_imports_twh" data-dec="2" data-t="69.2"></span><span class="unit">TWh/yr</span></div></div>
+      </div>
+      <div style="display:flex; gap:60px; margin-top:34px;">
+        <div><div class="lbl">Operating cost</div><div class="big"><span data-count="annual.normal.opex_meur" data-dec="0" data-t="69.6"></span><span class="unit">→</span></div></div>
+        <div><div class="lbl">&nbsp;</div><div class="big" style="color:var(--money)"><span data-count="annual.severe.opex_meur" data-dec="0" data-t="70.4"></span><span class="unit">M€/yr</span></div></div>
+      </div>
+      <div class="lbl" style="margin-top:34px;">Unserved energy: <b class="mono" style="color:var(--wind)">0 MWh</b> in both years</div>
+    </div>
+    <div class="card el" data-a="up" data-t="70.8" style="position:absolute; left:960px; top:330px; width:840px; height:520px; padding:40px;">
+      <div class="lbl">Where reliability really fails</div>
+      <div style="font-size:30px; line-height:1.45; margin-top:22px;">
+        Shortages appear only when <b>import availability falls to ≈50%</b>:
+        <span class="mono" style="color:var(--warn)"><span data-count="shortage.ens_gwh_ntc50" data-dec="0" data-t="71.4"></span> GWh/yr</span>
+        unserved (severe drought, +8% demand).
+      </div>
+      <div style="font-size:30px; line-height:1.45; margin-top:26px; color:var(--ink2);">
+        Drought is first a <span style="color:var(--money)">financial & import-dependence</span> risk; interconnection governs reliability.
+      </div>
+    </div>
+    <div class="foot" data-a="fade" data-t="68" style="opacity:0">Demand & prices: SYNTHETIC research data · inflows reconstructed from NASA POWER precipitation · single-node model · not validated against observed grid operations</div>
+  </div>
+
+  <!-- ===================== C2 INVESTMENT 89–97 ===================== -->
+  <div class="scene" data-in="89" data-out="97">
+    <div style="position:absolute; left:120px; top:100px;">
+      <div class="eyebrow el" data-a="up" data-t="89.2">Value of flexibility · marginal analysis</div>
+      <div class="serif el" data-a="up" data-t="89.5" style="font-size:62px; margin-top:14px;">What one more unit of each resource is worth</div>
+    </div>
+    <svg id="bars" class="el" data-a="fade" data-t="89.8" width="1680" height="560" style="position:absolute; left:120px; top:300px;"></svg>
+    <div class="foot" data-a="fade" data-t="90">Finite differences around the base fleet; duals lie inside every finite-difference interval · costs: IRENA 2024 × 1.25 regional (assumption)</div>
+  </div>
+
+  <!-- ===================== S6 SCIENCE 101–109 ===================== -->
+  <div class="scene" data-in="101" data-out="109">
+    <div style="position:absolute; left:120px; top:100px;">
+      <div class="eyebrow el" data-a="up" data-t="101.2" style="color:var(--risk)">Planning under uncertainty</div>
+      <div class="serif el" data-a="up" data-t="101.5" style="font-size:60px; margin-top:14px;">Two-stage stochastic programme with CVaR</div>
+    </div>
+    <div class="card el" data-a="up" data-t="101.8" style="position:absolute; left:100px; top:300px; width:920px; padding:30px 30px;">
+      <div class="eq" id="eq4" style="font-size:23px;"></div>
+      <svg id="scen" width="820" height="330" style="margin-top:20px;"></svg>
+    </div>
+    <div class="card el" data-a="up" data-t="103.0" style="position:absolute; left:1070px; top:300px; width:750px; padding:36px 40px; font-size:28px; line-height:1.5;">
+      <div>Base case: stochastic plan = deterministic plan · <b class="mono" style="color:var(--risk)">VSS = 0</b> — solar is no-regret.</div>
+      <div style="margin-top:22px;">Exports limited to 300 MW: risk-aware plan adds <b class="mono"><span data-count="i2.wind_added" data-dec="0" data-t="104"></span> MW wind</b>,
+        CVaR <span class="mono" data-count="i2.cvar_det" data-dec="0" data-t="104.3"></span> → <span class="mono" style="color:var(--wind)" data-count="i2.cvar_stoch" data-dec="0" data-t="104.8"></span> M€/yr
+        for <span class="mono" style="color:var(--money)">+<span data-count="i2.cost_diff" data-dec="1" data-t="105.2"></span></span> M€/yr.</div>
+      <div style="margin-top:22px; color:var(--ink2); font-size:24px;">Checked against full-year chronology: error <span class="mono" id="valtxt"></span> M€/yr, rankings preserved.</div>
+    </div>
+  </div>
+
+  <!-- ===================== S7 CLOSING 109–116 ===================== -->
+  <div class="scene" data-in="109" data-out="116.2">
+    <div style="position:absolute; left:0; right:0; top:300px; text-align:center;">
+      <h1 class="title el" data-a="up" data-t="109.3" style="font-size:140px;">HYDROFLEX <span>AI</span></h1>
+      <div class="sub el" data-a="up" data-t="109.9" style="margin-top:24px;">An open-source digital twin for climate-resilient renewable electricity planning</div>
+      <div class="el" data-a="up" data-t="110.6" style="margin-top:60px; font-size:34px;">Ajsel Budlla · Whitman College</div>
+      <div class="el mono" data-a="up" data-t="111.2" style="margin-top:40px; font-size:28px; color:var(--hydro);">github.com/Ajsel28/hydroflex-ai &nbsp;·&nbsp; hydroflex-ai.netlify.app</div>
+      <div class="el mono" data-a="fade" data-t="112" style="margin-top:56px; font-size:17px; color:var(--ink3);">Research prototype · synthetic demand & prices · not endorsed by any institution · not validated against observed grid operations</div>
+    </div>
+  </div>
+
+  <div id="captions"></div>
+</div>
+
+<script>
+const D = window.SCENE_DATA;
+D.i2.cost_diff = D.i2.cost_stoch - D.i2.cost_det;
+const $ = (s, r = document) => r.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const easeIO = (x) => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const get = (path) => path.split('.').reduce((o, k) => o[k], D);
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+
+// ---------- Albania map ----------
+const alb = $('#albania');
+D.geo.neighbours.forEach((d) => svgEl('path', { d, fill: 'rgba(148,163,184,.05)', stroke: 'rgba(148,163,184,.25)', 'stroke-width': 1 }, alb));
+const outline = svgEl('path', { d: D.geo.albania, fill: 'rgba(34,211,238,.06)', stroke: '#22d3ee', 'stroke-width': 2.4, 'stroke-linejoin': 'round' }, alb);
+const nodes = D.geo.nodes.map((n, i) => {
+  const g = svgEl('g', { opacity: 0 }, alb);
+  const ring = svgEl('circle', { cx: n.x, cy: n.y, r: 10, fill: 'none', stroke: i < 3 ? '#22d3ee' : (n.name === 'Fier PV' ? '#f5c542' : n.name === 'Tirana' ? '#e7eef8' : '#2dd4bf'), 'stroke-width': 2 }, g);
+  svgEl('circle', { cx: n.x, cy: n.y, r: 5, fill: ring.getAttribute('stroke') }, g);
+  const t = svgEl('text', { x: n.x + 16, y: n.y + 6, fill: '#a8b6c9', 'font-size': 18, 'font-family': 'JetBrains Mono' }, g); t.textContent = n.name;
+  return { g, ring, i };
+});
+const albLen = outline.getTotalLength();
+outline.style.strokeDasharray = albLen;
+
+// ---------- Flow diagram ----------
+const fl = $('#flows');
+const C = { x: 760, y: 610 };
+const sources = [
+  { name: 'Reservoir hydro', sub: 'Drin cascade · water balance', color: '#22d3ee', x: 470, y: 340 },
+  { name: 'Run-of-river', sub: 'reconstructed inflows', color: '#2dd4bf', x: 430, y: 530 },
+  { name: 'Solar PV', sub: 'NASA POWER irradiance', color: '#f5c542', x: 450, y: 720 },
+  { name: 'Wind', sub: 'NASA POWER 50 m wind', color: '#34d399', x: 560, y: 900 },
+  { name: 'Battery', sub: 'MW / MWh sized separately', color: '#a78bfa', x: 1000, y: 880, side: 'below' },
+  { name: 'Imports / exports', sub: 'limited interconnector', color: '#94a3b8', x: 1000, y: 330, side: 'left' },
+];
+const flowPaths = sources.map((s, i) => {
+  const mx = (s.x + C.x) / 2 + (i % 2 ? 60 : -60), my = (s.y + C.y) / 2 + (i % 2 ? -40 : 40);
+  const p = svgEl('path', { d: `M${s.x},${s.y} Q${mx},${my} ${C.x},${C.y}`, fill: 'none', stroke: s.color, 'stroke-opacity': .35, 'stroke-width': 3 }, fl);
+  const L = p.getTotalLength(); p.style.strokeDasharray = L;
+  const dots = [0, 1, 2, 3].map(() => svgEl('circle', { r: 6, fill: s.color, opacity: 0 }, fl));
+  const g = svgEl('g', { opacity: 0 }, fl);
+  svgEl('circle', { cx: s.x, cy: s.y, r: 30, fill: '#0b1422', stroke: s.color, 'stroke-width': 3 }, g);
+  const below = s.side === 'below', right = !below && s.side !== 'left' && s.x > C.x;
+  const lx = below ? s.x : s.x + (right ? 44 : -44), ly = below ? s.y + 62 : s.y - 4, anchor = below ? 'middle' : right ? 'start' : 'end';
+  const t1 = svgEl('text', { x: lx, y: ly, fill: '#e7eef8', 'font-size': 26, 'font-weight': 600, 'text-anchor': anchor, 'font-family': 'Inter Tight' }, g); t1.textContent = s.name;
+  const t2 = svgEl('text', { x: lx, y: ly + 30, fill: '#8193aa', 'font-size': 19, 'text-anchor': anchor, 'font-family': 'JetBrains Mono' }, g); t2.textContent = s.sub;
+  return { p, L, dots, g, i };
+});
+const hub = svgEl('g', { opacity: 0 }, fl);
+svgEl('circle', { cx: C.x, cy: C.y, r: 78, fill: '#0b1422', stroke: '#e7eef8', 'stroke-width': 2.5 }, hub);
+const ht = svgEl('text', { x: C.x, y: C.y - 4, fill: '#e7eef8', 'font-size': 24, 'font-weight': 600, 'text-anchor': 'middle', 'font-family': 'Inter Tight' }, hub); ht.textContent = 'Demand';
+const ht2 = svgEl('text', { x: C.x, y: C.y + 26, fill: '#8193aa', 'font-size': 17, 'text-anchor': 'middle', 'font-family': 'JetBrains Mono' }, hub); ht2.textContent = 'hourly balance';
+
+// ---------- Equations ----------
+const K = (id, tex) => katex.render(tex, document.getElementById(id), { throwOnError: false, displayMode: true });
+K('eq1', String.raw`g^{pv}_t+g^{w}_t+g^{ror}_t+h_t+d_t+m_t+u_t = D_t+c_t+y_t`);
+K('eq2', String.raw`V_{t+1}=V_t+\Delta t\,(I_t-h_t/\kappa-\sigma_t),\;\; \kappa\approx 552\ \tfrac{\mathrm{MWh}}{\mathrm{hm^3}}`);
+K('eq3', String.raw`e_{t+1}=e_t+\Delta t\,(\eta^c c_t-d_t/\eta^d)`);
+K('eq4', String.raw`\min\; \text{CAPEX}(x)+\sum_s \pi_s L_s(x,y_s)+\lambda\Big[\zeta+\tfrac{1}{1-\alpha}\sum_s\pi_s(L_s-\zeta)^+\Big]`);
+$('#valtxt').textContent = `${D.validation.chrono_err_min.toFixed(1)}–${D.validation.chrono_err_max.toFixed(1)}`;
+
+// ---------- Scenario bars (S6) ----------
+const sc = $('#scen');
+const maxV = Math.max(...D.stochastic.scenarios.map((s) => Math.abs(s.opex_meur)));
+const scBars = D.stochastic.scenarios.map((s, i) => {
+  const x = 30 + i * 158, zero = 210, h = (s.opex_meur / maxV) * 170;
+  const col = ['#3b82f6', '#22d3ee', '#f59e0b', '#f87171', '#c084fc'][i];
+  const r = svgEl('rect', { x, width: 110, fill: col, rx: 6 }, sc);
+  const lb = svgEl('text', { x: x + 55, y: 320, fill: '#a8b6c9', 'font-size': 17, 'text-anchor': 'middle', 'font-family': 'Inter Tight' }, sc); lb.textContent = s.label;
+  const pb = svgEl('text', { x: x + 55, y: 296, fill: '#6f7f96', 'font-size': 16, 'text-anchor': 'middle', 'font-family': 'JetBrains Mono' }, sc); pb.textContent = `p = ${s.p.toFixed(2)}`;
+  return { r, zero, h };
+});
+svgEl('line', { x1: 20, x2: 810, y1: 210, y2: 210, stroke: '#334155' }, sc);
+const cvarY = 210 - (D.stochastic.cvar_meur / maxV) * 170;
+const cvarLine = svgEl('line', { x1: 20, x2: 810, y1: cvarY, y2: cvarY, stroke: '#c084fc', 'stroke-dasharray': '8 6', 'stroke-width': 2, opacity: 0 }, sc);
+const cvarT = svgEl('text', { x: 30, y: cvarY - 10, fill: '#c084fc', 'font-size': 18, 'text-anchor': 'start', 'font-family': 'JetBrains Mono', opacity: 0 }, sc);
+cvarT.textContent = `CVaR₀.₉ = ${Math.round(D.stochastic.cvar_meur)} M€/yr`;
+
+// ---------- Marginal-value bars (C2) ----------
+const bars = $('#bars');
+const items = [
+  { k: 'Solar PV — value', v: D.marginal.pv_value, c: '#f5c542', unit: 'k€ per MW-yr' },
+  { k: 'Solar PV — annualised cost', v: D.marginal.pv_cost, c: '#5b6b80', unit: 'k€ per MW-yr' },
+  { k: 'Battery 400 MW/1.6 GWh — arbitrage saving', v: D.battery.saving_meur, c: '#a78bfa', unit: 'M€/yr' , scale: 1000 / 400 },
+  { k: 'Battery 400 MW/1.6 GWh — annualised cost', v: D.battery.cost_meur, c: '#5b6b80', unit: 'M€/yr', scale: 1000 / 400 },
+  { k: 'Import capacity — value, compound shock', v: D.marginal.imp_value_compound, c: '#94a3b8', unit: 'k€ per MW-yr' },
+];
+const bmax = 170;
+const barEls = items.map((it, i) => {
+  const y = 20 + i * 104;
+  const lbl = svgEl('text', { x: 0, y: y + 34, fill: '#e7eef8', 'font-size': 26, 'font-family': 'Inter Tight' }, bars); lbl.textContent = it.k;
+  const r = svgEl('rect', { x: 640, y: y + 8, height: 40, width: 0, rx: 8, fill: it.c }, bars);
+  const val = svgEl('text', { x: 650, y: y + 38, fill: '#e7eef8', 'font-size': 24, 'font-family': 'JetBrains Mono' }, bars);
+  return { it, r, val, y };
+});
+
+// ---------- Website shots ----------
+// cam: [scale, x, y] in output pixels of the top-left corner (image displayed at 1920 px base width)
+const SHOTS = [
+  { src: '01_landing', t0: 30, t1: 33.4, a: [1.0, 0, 0], b: [1.08, -70, -30] },
+  { src: '02_mission', t0: 33, t1: 38.4, a: [1.0, 0, 0], b: [1.22, -330, -150] },
+  { src: '04_lab_initial', t0: 38, t1: 41.4, a: [1.0, 0, 0], b: [1.18, -330, -60] },
+  { src: '05_lab_normal_running', t0: 41, t1: 43.4, a: [1.25, -430, -300], b: [1.32, -520, -350] },
+  { src: '05_lab_normal_result', t0: 43, t1: 50.4, a: [1.0, 0, 0], b: [1.25, -40, -120] },
+  { src: '05_lab_normal_result_scrolled', t0: 50, t1: 55.4, a: [1.0, 0, 0], b: [1.15, -60, -100] },
+  { src: '06_lab_severe_set', t0: 55, t1: 57.4, a: [1.15, -600, -100], b: [1.2, -650, -110] },
+  { src: '07_lab_severe_running', t0: 57, t1: 58.9, a: [1.25, -430, -300], b: [1.3, -500, -340] },
+  { src: '07_lab_severe_result', t0: 58.5, t1: 64.4, a: [1.0, 0, 0], b: [1.25, -40, -120] },
+  { src: '07_lab_severe_result_scrolled', t0: 64, t1: 67.4, a: [1.0, 0, 0], b: [1.12, -40, -80] },
+  { src: '08_lab_battery_result_scrolled', t0: 75, t1: 81.4, a: [1.0, 0, 0], b: [1.18, -60, -110] },
+  { src: '10_frontier', t0: 81, t1: 89.4, a: [1.0, 0, 0], b: [1.28, -220, -200] },
+  { src: '11_risk', t0: 97, t1: 101.4, a: [1.0, 0, 0], b: [1.15, -100, -120] },
+];
+const CAPS = [
+  { t0: 30.4, t1: 37.8, k: 'Live platform', t: 'Mission Control: one full simulated year, hour by hour', n: 'reference experiment · 8,760 h · HiGHS optimal', badge: 'ref' },
+  { t0: 38.4, t1: 49.8, k: 'Climate Stress Laboratory', t: 'A real optimisation run of a winter week — solved live by HiGHS', n: 'POST /api/simulate · 168 h · normal inflows', badge: 'live' },
+  { t0: 50.2, t1: 54.8, k: 'Result', t: `Normal week: imports ≈ ${D.week.normal.imports_gwh.toFixed(1)} GWh, surplus exported`, n: 'every number returned by the solver for this run', badge: 'live' },
+  { t0: 55.4, t1: 66.8, k: 'Drought experiment', t: `Severe drought (inflows −40%): imports rise to ≈ ${D.week.severe_drought.imports_gwh.toFixed(1)} GWh this week`, n: `week cost ${D.week.normal.cost_meur.toFixed(2)} → ${D.week.severe_drought.cost_meur.toFixed(2)} M€ · unserved energy 0 MWh`, badge: 'live' },
+  { t0: 75.4, t1: 80.8, k: 'Storage', t: `+300 MW / 1,200 MWh battery: week cost ${D.week.severe_drought.cost_meur.toFixed(2)} → ${D.week.severe_drought_battery_300mw_1200mwh.cost_meur.toFixed(2)} M€`, n: `imports rise to ${D.week.severe_drought_battery_300mw_1200mwh.imports_gwh.toFixed(1)} GWh — storage shifts cheap imports to expensive hours`, badge: 'live' },
+  { t0: 81.4, t1: 88.8, k: 'Investment frontier', t: 'Strategies evaluated on five inflow & market scenarios', n: 'under these assumptions, larger solar portfolios dominate on cost and imports', badge: 'ref' },
+  { t0: 97.3, t1: 100.8, k: 'Risk & uncertainty', t: 'Deterministic vs two-stage stochastic planning', n: 'reference experiment · 5 scenarios × 8 hourly representative weeks', badge: 'ref' },
+];
+const shotsEl = $('#shots');
+const shotEls = SHOTS.map((s) => {
+  const d = document.createElement('div'); d.className = 'shot';
+  const img = new Image(); img.src = `../build/shots/${s.src}.png`; d.appendChild(img); shotsEl.appendChild(d);
+  return { s, d, img };
+});
+const capsEl = $('#captions');
+const capEls = CAPS.map((c) => {
+  const d = document.createElement('div'); d.className = 'lower';
+  d.innerHTML = `<div class="k">${c.k}</div><div class="t">${c.t}</div><div class="n">${c.n}</div>`;
+  const b = document.createElement('div'); b.className = 'live' + (c.badge === 'ref' ? ' ref' : '');
+  b.textContent = c.badge === 'ref' ? '● reference experiment' : '● live HiGHS run';
+  capsEl.appendChild(d); capsEl.appendChild(b);
+  return { c, d, b };
+});
+
+// ---------- render(t) ----------
+function fadeWin(t, a, b, f = 0.45) { return clamp((t - a) / f) * clamp((b - t) / f); }
+function render(t) {
+  document.querySelectorAll('.scene').forEach((sc) => {
+    const a = +sc.dataset.in, b = +sc.dataset.out;
+    const o = fadeWin(t, a, b, 0.5);
+    sc.style.opacity = o; sc.style.display = o > 0 ? 'block' : 'none';
+    if (o <= 0) return;
+    sc.querySelectorAll('[data-a]').forEach((el) => {
+      const p = ease((t - +el.dataset.t) / 0.8);
+      el.style.opacity = p;
+      if (el.dataset.a === 'up') el.style.transform = `translateY(${(1 - p) * 34}px)`;
+    });
+    sc.querySelectorAll('[data-count]').forEach((el) => {
+      const p = easeIO((t - +el.dataset.t) / 1.2);
+      const v = get(el.dataset.count) * p;
+      el.textContent = v.toLocaleString('en-US', { minimumFractionDigits: +el.dataset.dec, maximumFractionDigits: +el.dataset.dec });
+    });
+  });
+  // map
+  outline.style.strokeDashoffset = albLen * (1 - easeIO((t - 0.3) / 3.2));
+  nodes.forEach(({ g, ring, i }) => {
+    const p = clamp((t - 2.6 - i * 0.25) / 0.5); g.setAttribute('opacity', p);
+    const ph = ((t * 0.8 + i * 0.3) % 1); ring.setAttribute('r', 8 + ph * 14); ring.setAttribute('stroke-opacity', (1 - ph) * p);
+  });
+  // flows
+  flowPaths.forEach(({ p, L, dots, g, i }) => {
+    const appear = 13.2 + i * 0.55;
+    g.setAttribute('opacity', clamp((t - appear) / 0.5));
+    p.style.strokeDashoffset = L * (1 - easeIO((t - appear) / 1.0));
+    dots.forEach((dot, j) => {
+      const on = clamp((t - appear - 1.0) / 0.4);
+      const u = ((t - appear) * 0.32 + j / dots.length) % 1;
+      const pt = p.getPointAtLength(u * L);
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y); dot.setAttribute('opacity', on * (0.35 + 0.65 * Math.sin(Math.PI * u)));
+    });
+  });
+  hub.setAttribute('opacity', clamp((t - 13.0) / 0.6));
+  // scenario bars
+  scBars.forEach(({ r, zero, h }, i) => {
+    const p = easeIO((t - 102.3 - i * 0.18) / 0.9), hh = h * p;
+    r.setAttribute('y', hh >= 0 ? zero - hh : zero); r.setAttribute('height', Math.abs(hh));
+  });
+  const cv = clamp((t - 103.6) / 0.6); cvarLine.setAttribute('opacity', cv); cvarT.setAttribute('opacity', cv);
+  // marginal bars
+  barEls.forEach(({ it, r, val }, i) => {
+    const p = easeIO((t - 90.2 - i * 0.35) / 1.0);
+    const v = it.v * (it.scale || 1);
+    const w = (v / 360) * 900 * p;
+    r.setAttribute('width', Math.max(0, w));
+    val.setAttribute('x', 650 + Math.max(0, w) + 14);
+    val.textContent = p > 0.02 ? `${(it.v * p).toFixed(it.unit === 'M€/yr' ? 1 : 0)} ${it.unit}` : '';
+  });
+  // shots
+  shotEls.forEach(({ s, d, img }) => {
+    const o = fadeWin(t, s.t0, s.t1, 0.4);
+    d.style.opacity = o; d.style.display = o > 0 ? 'block' : 'none';
+    if (o <= 0) return;
+    const p = easeIO((t - s.t0) / (s.t1 - s.t0));
+    const sc = s.a[0] + (s.b[0] - s.a[0]) * p, x = s.a[1] + (s.b[1] - s.a[1]) * p, y = s.a[2] + (s.b[2] - s.a[2]) * p;
+    img.style.transform = `translate(${x}px, ${y}px) scale(${sc})`;
+  });
+  capEls.forEach(({ c, d, b }) => {
+    const o = fadeWin(t, c.t0, c.t1, 0.4);
+    d.style.opacity = o; d.style.transform = `translateY(${(1 - clamp((t - c.t0) / 0.5)) * 20}px)`;
+    b.style.opacity = o;
+  });
+}
+window.render = render;
+window.DURATION = 116.2;
+window.ready = Promise.all([document.fonts.ready, ...shotEls.map(({ img }) => img.decode().catch(() => undefined))]);
+render(0);
+</script>
+</body>
+</html>

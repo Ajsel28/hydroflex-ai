@@ -33,7 +33,10 @@ from hydroflex.service import run_investment, run_simulation, run_stochastic
 from hydroflex_api import registry
 from hydroflex_api.schemas import InvestmentRequest, SimulateRequest, StochasticRequest
 
-MAX_STEPS = {"simulate": 8760, "investment": 2920, "stochastic_total": 7300}
+MAX_STEPS = {"simulate": int(os.getenv("HYDROFLEX_MAX_SIM_STEPS", "8760")),
+             "investment": int(os.getenv("HYDROFLEX_MAX_INV_STEPS", "2920")),
+             "stochastic_total": int(os.getenv("HYDROFLEX_MAX_STOCH_STEPS", "7300"))}
+# Public free-tier hosting: e.g. HYDROFLEX_MAX_SIM_STEPS=720, HYDROFLEX_MAX_INV_STEPS=720, HYDROFLEX_MAX_STOCH_STEPS=3360
 RATE_LIMIT = int(os.getenv("HYDROFLEX_RATE_LIMIT", "60"))  # deployment config sets 12
 RATE_WINDOW_S = 600
 ORIGINS = [o.strip() for o in os.getenv("HYDROFLEX_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,"

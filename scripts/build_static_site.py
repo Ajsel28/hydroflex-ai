@@ -20,7 +20,6 @@ from pathlib import Path
 os.environ.setdefault("HYDROFLEX_RATE_LIMIT", "100000")
 
 from fastapi.testclient import TestClient  # noqa: E402
-
 from hydroflex import REPO_ROOT  # noqa: E402
 from hydroflex_api.main import app  # noqa: E402
 
@@ -69,6 +68,9 @@ def main() -> None:
     paper = REPO_ROOT / "research" / "paper" / "HydroFlex_AI_Research_Paper.pdf"
     if paper.exists():
         shutil.copy2(paper, DIST / "HydroFlex_AI_Research_Paper.pdf")
+    for extra in (REPO_ROOT / "video" / "HydroFlex_AI_Demo.mp4", REPO_ROOT / "video" / "HydroFlex_AI_Demo_Captions.srt"):
+        if extra.exists():
+            shutil.copy2(extra, DIST / extra.name)
     poster = REPO_ROOT / "research" / "poster" / "HydroFlex_AI_Poster.pdf"
     if poster.exists():
         shutil.copy2(poster, DIST / "HydroFlex_AI_Poster.pdf")

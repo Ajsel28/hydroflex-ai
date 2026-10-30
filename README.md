@@ -13,6 +13,32 @@ Ajsel Budlla · Whitman College · Biochemistry, Biophysics and Molecular Biolog
 > is derived from weather data. The model is verified (tests, PyPSA cross-check) but **not validated against
 > observed Albanian operations**.
 
+
+| | |
+|---|---|
+| **Live website** (static snapshot of the verified reference experiments) | https://hydroflex-ai.netlify.app |
+| **Research paper (PDF, LaTeX via Tectonic, 30 pp.)** | [`research/paper/HydroFlex_AI_Research_Paper.pdf`](research/paper/HydroFlex_AI_Research_Paper.pdf) |
+| **Poster (A0 PDF)** | [`research/poster/HydroFlex_AI_Poster.pdf`](research/poster/HydroFlex_AI_Poster.pdf) |
+| **Demo video (MP4, 1:56, 1080p)** | [release v0.1.0](https://github.com/Ajsel28/hydroflex-ai/releases/tag/v0.1.0) · [online](https://hydroflex-ai.netlify.app/HydroFlex_AI_Demo.mp4) · captions [`video/HydroFlex_AI_Demo_Captions.srt`](video/HydroFlex_AI_Demo_Captions.srt) |
+| **Executive summary / policy brief** | [`research/EXECUTIVE_SUMMARY.md`](research/EXECUTIVE_SUMMARY.md) · [`research/POLICY_BRIEF.md`](research/POLICY_BRIEF.md) |
+
+The public website serves pre-computed, verified reference experiments (it shows a "static deployment" banner).
+**Live HiGHS optimisation runs need the Python API**: run it locally (below) or deploy `Dockerfile.api`.
+
+![Mission Control](docs/screenshots/mission.png)
+
+<details><summary>More screenshots</summary>
+
+| | |
+|---|---|
+| ![Landing](docs/screenshots/landing.png) | ![Climate Stress Lab](docs/screenshots/lab.png) |
+| ![Dispatch](docs/screenshots/dispatch.png) | ![Reservoir & storage](docs/screenshots/storage.png) |
+| ![Investment frontier](docs/screenshots/frontier.png) | ![Risk & uncertainty](docs/screenshots/risk.png) |
+| ![Research notebook](docs/screenshots/notebook.png) | ![Presentation mode](docs/screenshots/present.png) |
+
+Mobile (390 px): `docs/screenshots/mobile/`.
+</details>
+
 ---
 
 ## Research question
@@ -28,11 +54,11 @@ battery storage and electricity imports under uncertain rainfall, fluctuating de
 | Climate / market scenarios | `packages/hydroflex/climate/scenarios.py` | 4 presets + 5-scenario stochastic set |
 | Experiment pipeline A–K (+ sensitivity, resolution, validation) | `packages/hydroflex/experiments/` | executed; outputs in `results/experiments/` |
 | FastAPI backend | `apps/api/hydroflex_api/` | working, 13 API tests |
-| React/TypeScript digital-twin UI (10 pages incl. presentation mode) | `apps/web/` | builds; 39 unit tests + 3 e2e tests |
-| LaTeX manuscript (sources, generated figures/tables) | `research/paper/` | complete source; **PDF not compiled here (no LaTeX engine)** |
+| React/TypeScript digital-twin UI (10 pages incl. presentation mode) | `apps/web/` | builds; 42 unit tests + 3 Playwright e2e tests |
+| LaTeX manuscript (sources, generated figures/tables) | `research/paper/` | compiled to PDF with Tectonic (XeTeX), 30 pages |
 | Poster generator (A0 PDF) | `research/poster/` | generated with matplotlib |
 | Policy brief (generated from results) | `research/POLICY_BRIEF.md` | generated |
-| Two-minute video package | `video/` | script, shot list, storyboard, captions; **no video rendered** |
+| Demo video (rendered) + sources | `video/` | 1:56 MP4 built from real website captures (live HiGHS runs) and programmatic motion graphics; see `video/README.md` |
 
 ## Main findings (model implications under stated assumptions)
 All numbers come from `results/experiments/` (regenerate with `python -m hydroflex.experiments.run_all`).
@@ -113,15 +139,20 @@ cd apps/web && npm run lint && npm run typecheck && npm test && npm run build &&
 ```
 
 ## Paper
-`research/paper/main.tex` (sections in `sections/`, bibliography `references.bib`). Compile with
-`latexmk -pdf main.tex` or `tectonic main.tex`. No LaTeX engine was available in the build environment, so
-the PDF has not been produced yet (see `FINAL_BUILD_REPORT.md`).
+`research/paper/main.tex` (sections in `sections/`, bibliography `references.bib`, generated `figures/` and `tables/`).
+Compiled PDF: `research/paper/HydroFlex_AI_Research_Paper.pdf`. To rebuild without installing a TeX distribution:
+download the portable [Tectonic](https://tectonic-typesetting.github.io) binary and run `tectonic -X compile main.tex`
+in `research/paper` (or use `latexmk -pdf main.tex` with TeX Live/MiKTeX).
 
 ## Deployment
-The optimiser needs a **persistent Python backend**; it cannot run on static hosting alone.
-- API: `Dockerfile.api` (health check `/api/health`), example `deploy/render.yaml`, `deploy/docker-compose.yml`.
-- Frontend: static build (`apps/web/dist`), e.g. `deploy/vercel.json`; set `VITE_API_BASE` at build time and
-  `HYDROFLEX_CORS_ORIGINS` on the API. Live runs are rate-limited and size-capped (`apps/api/hydroflex_api/main.py`).
+- **Frontend (live):** https://hydroflex-ai.netlify.app — static build plus JSON snapshots of the reference
+  experiments, produced by the real API (`scripts/build_static_site.py`):
+  `cd apps/web && VITE_API_BASE= npm run build && cd ../.. && python scripts/build_static_site.py && netlify deploy --prod --dir apps/web/dist`.
+- **Backend (live solver):** the optimiser needs a persistent Python host; it cannot run on static hosting.
+  `Dockerfile.api` (health check `/api/health`) and `deploy/render.yaml` (free-tier limits via `HYDROFLEX_MAX_*_STEPS`)
+  are ready. Once it is deployed, add `/api/*  https://<backend>/api/:splat  200` at the top of `apps/web/dist/_redirects`
+  (or rebuild with `VITE_API_BASE=https://<backend>`) to enable live runs on the public site.
+- Live runs are rate-limited and size-capped (`apps/api/hydroflex_api/main.py`).
 
 ## Documentation
 `METHODOLOGY.md`, `MODEL_CARD.md`, `DATA_CARD.md`, `LIMITATIONS.md`, `docs/API_CONTRACT.md`, `docs/FRONTEND.md`,

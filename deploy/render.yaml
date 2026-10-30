@@ -7,9 +7,15 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: HYDROFLEX_CORS_ORIGINS
-        value: https://YOUR-FRONTEND-DOMAIN
+        value: https://hydroflex-ai.netlify.app
       - key: HYDROFLEX_RATE_LIMIT
         value: "12"
+      - key: HYDROFLEX_MAX_SIM_STEPS
+        value: "720"
+      - key: HYDROFLEX_MAX_INV_STEPS
+        value: "720"
+      - key: HYDROFLEX_MAX_STOCH_STEPS
+        value: "3360"
   - type: web
     name: hydroflex-web
     runtime: static

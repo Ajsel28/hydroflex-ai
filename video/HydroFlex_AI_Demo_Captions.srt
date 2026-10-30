@@ -1,0 +1,63 @@
+1
+00:00:00,400 --> 00:00:04,400
+HYDROFLEX AI — climate intelligence for resilient energy systems.
+
+2
+00:00:04,600 --> 00:00:07,400
+About 95% of Albania's installed capacity is hydropower; the Drin cascade alone is 1,350 MW.
+
+3
+00:00:07,600 --> 00:00:11,600
+When rainfall fails, the grid must import. How should it plan for an uncertain climate?
+
+4
+00:00:12,400 --> 00:00:19,600
+One hourly optimisation coordinates reservoir hydro, run-of-river, solar, wind, batteries and imports.
+
+5
+00:00:20,000 --> 00:00:29,600
+Energy balance, reservoir water balance and battery state of charge — a linear programme solved with HiGHS and verified against an independent PyPSA model.
+
+6
+00:00:30,400 --> 00:00:37,800
+Mission Control: one full simulated year, hour by hour (reference experiment).
+
+7
+00:00:38,400 --> 00:00:49,800
+Climate Stress Laboratory: a real optimisation of a winter week, solved live by HiGHS.
+
+8
+00:00:50,200 --> 00:00:54,800
+Normal week: imports about 2.0 GWh; the surplus is exported.
+
+9
+00:00:55,400 --> 00:01:06,800
+Severe drought, inflows −40%: imports rise to about 29.4 GWh; no energy goes unserved.
+
+10
+00:01:07,200 --> 00:01:14,600
+Over a full year, net imports rise from 0.77 to 3.48 TWh and operating cost from 41 to 324 M€. Shortages appear only when import availability falls to about half.
+
+11
+00:01:15,400 --> 00:01:20,800
+A 300 MW battery cuts that week's cost from 1.40 to 1.05 M€ — while imports rise: storage shifts cheap imports to expensive hours.
+
+12
+00:01:21,400 --> 00:01:28,800
+Investment frontier: strategies evaluated on five inflow and market scenarios (reference experiment).
+
+13
+00:01:29,400 --> 00:01:36,600
+Marginal value: one more MW of solar is worth about 140 k€ per year against an 80 k€ annualised cost; battery arbitrage recovers only a fraction of its cost.
+
+14
+00:01:37,300 --> 00:01:40,800
+Risk and uncertainty: deterministic versus two-stage stochastic planning.
+
+15
+00:01:41,400 --> 00:01:48,600
+With exports limited to 300 MW, risk-aware planning adds 230 MW of wind and cuts CVaR from 283 to 208 M€/yr — checked against full-year chronology (error 1.7–10.0 M€/yr).
+
+16
+00:01:49,300 --> 00:01:55,600
+HYDROFLEX AI — Ajsel Budlla, Whitman College. Research prototype: synthetic demand and prices; not validated against observed grid operations.

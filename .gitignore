@@ -24,3 +24,8 @@ results/run_all*.log
 research/paper/main.pdf
 *.xdv
 .tools/
+
+video/build/frames/
+video/build/preview/
+video/build/music.wav
+video/*.mp4
