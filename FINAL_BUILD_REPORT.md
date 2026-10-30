@@ -38,7 +38,7 @@ Repository: a dedicated git repo in `hydroflex-ai/` (branch `main`). Nothing has
   - the video package (`video/`).
 - **Documentation**: README, MODEL_CARD, DATA_CARD, METHODOLOGY, LIMITATIONS, CHANGELOG, docs/API_CONTRACT.md,
   docs/FRONTEND.md, AUTONOMOUS_BUILD_LOG.md.
-- **Deployment configs**: `Dockerfile.api`, `deploy/render.yaml`, `deploy/vercel.json` (static frontend only),
+- **Deployment configs**: `Dockerfile.api`, `render.yaml`, `deploy/vercel.json` (static frontend only),
   `deploy/docker-compose.yml`, `.env.example`, `.github/workflows/ci.yml`.
 
 ## 2. What runs successfully (verified in this session)

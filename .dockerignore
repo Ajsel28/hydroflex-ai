@@ -1,0 +1,14 @@
+.git
+.venv
+.tools
+**/__pycache__
+**/node_modules
+apps/web
+video
+results/runs
+results/superseded
+results/registry.sqlite
+research/poster
+research/figures
+.github
+*.log

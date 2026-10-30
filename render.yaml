@@ -1,0 +1,27 @@
+# Render Blueprint — HYDROFLEX AI optimisation API (FastAPI + HiGHS).
+# The frontend is hosted separately on Netlify (https://hydroflex-ai.netlify.app); this file deploys only the backend.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: hydroflex-api
+    runtime: docker
+    plan: free                      # 512 MB RAM, 0.1 CPU; spins down when idle (first request takes ~1 min)
+    region: frankfurt
+    dockerfilePath: ./Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: HYDROFLEX_CORS_ORIGINS
+        value: https://hydroflex-ai.netlify.app
+      - key: HYDROFLEX_RATE_LIMIT     # optimisation runs per client per 10 minutes
+        value: "12"
+      # Problem-size caps sized for the free instance (full-year and 8-week stochastic runs stay as reference results)
+      - key: HYDROFLEX_MAX_SIM_STEPS  # e.g. 720 h hourly dispatch
+        value: "720"
+      - key: HYDROFLEX_MAX_INV_STEPS  # e.g. 720 h hourly investment
+        value: "720"
+      - key: HYDROFLEX_MAX_STOCH_STEPS  # 5 scenarios x 4 weeks x 168 h
+        value: "3360"
+      - key: PYTHONUNBUFFERED
+        value: "1"

@@ -59,7 +59,7 @@ Date: 2026-10-30. Owner: Ajsel Budlla (GitHub `Ajsel28`, Netlify team "Ajsel").
 1. **Live optimisation on the public site.** No Python hosting account is authenticated on this machine (no
    Render, Fly, Railway or Hugging Face credentials). Netlify cannot run the HiGHS/SciPy backend. Options:
    - **Render (recommended, free tier):** sign in at render.com with GitHub → *New → Blueprint* → select
-     `Ajsel28/hydroflex-ai`. `deploy/render.yaml` defines the API (Docker, `/api/health`, free-tier step limits,
+     `Ajsel28/hydroflex-ai`. `render.yaml` defines the API (Docker, `/api/health`, free-tier step limits,
      CORS for the Netlify site). Then tell me the API URL, and I will add the proxy rule
      `/api/*  https://<api-host>/api/:splat  200` and redeploy Netlify.
    - Or authorise another host (e.g. log in with `hf auth login`, then I can create a Docker Space).

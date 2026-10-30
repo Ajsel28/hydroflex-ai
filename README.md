@@ -149,7 +149,7 @@ in `research/paper` (or use `latexmk -pdf main.tex` with TeX Live/MiKTeX).
   experiments, produced by the real API (`scripts/build_static_site.py`):
   `cd apps/web && VITE_API_BASE= npm run build && cd ../.. && python scripts/build_static_site.py && netlify deploy --prod --dir apps/web/dist`.
 - **Backend (live solver):** the optimiser needs a persistent Python host; it cannot run on static hosting.
-  `Dockerfile.api` (health check `/api/health`) and `deploy/render.yaml` (free-tier limits via `HYDROFLEX_MAX_*_STEPS`)
+  `Dockerfile.api` (health check `/api/health`) and `render.yaml` (root-level Render Blueprint: free plan, Docker, free-tier limits via `HYDROFLEX_MAX_*_STEPS`)
   are ready. Once it is deployed, add `/api/*  https://<backend>/api/:splat  200` at the top of `apps/web/dist/_redirects`
   (or rebuild with `VITE_API_BASE=https://<backend>`) to enable live runs on the public site.
 - Live runs are rate-limited and size-capped (`apps/api/hydroflex_api/main.py`).
