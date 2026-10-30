@@ -71,7 +71,19 @@ export const SCENARIO_FIELDS: FieldKey[] = ['drought_severity', 'demand_growth',
 export const SYSTEM_FIELDS: FieldKey[] = ['pv_mw', 'wind_mw', 'battery_power_mw', 'battery_energy_mwh', 'import_capacity_mw', 'voll_eur_mwh'];
 
 /** Step limits per mode (from /api/model/metadata `limits`). */
-export const LIMITS = { simulate: 8760, investment: 2920, stochastic_total: 7300 } as const;
+/** Problem-size limits. Defaults match the local API; replaced by the live server's limits from /api/health. */
+export const LIMITS: { simulate: number; investment: number; stochastic_total: number } = {
+  simulate: 8760,
+  investment: 2920,
+  stochastic_total: 7300,
+};
+export function applyServerLimits(l: Partial<typeof LIMITS> | undefined): void {
+  if (!l) return;
+  for (const k of ['simulate', 'investment', 'stochastic_total'] as const) {
+    const v = l[k];
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) LIMITS[k] = v;
+  }
+}
 export const RESOLUTIONS = [1, 2, 3, 6] as const;
 
 /** Form values are kept as strings so the user can type freely; parsed on validation. */

@@ -200,7 +200,7 @@ export function LabControls(p: LabControlsProps) {
           A two-stage stochastic run with {p.nStochastic} scenarios typically takes about a minute{form.compare ? ', and 1–3 minutes with the deterministic comparison' : ''}. The CPU is shared; you can cancel at any time.
         </Callout>
       )}
-      {p.apiOnline === false && <Callout tone="warn">The API is unreachable, so no optimisation can be run right now. Reference experiments remain viewable on the other pages.</Callout>}
+      {p.apiOnline === false && <Callout tone="warn">The live solver API is unreachable right now. On the public site it runs on a free Render instance that sleeps when idle; it wakes within about a minute and this page re-checks every 20 s. Reference experiments remain viewable on the other pages.</Callout>}
 
       <div className="sticky bottom-0 -mx-4 flex items-center gap-2 border-t border-line bg-panel px-4 py-3 sm:-mx-5 sm:px-5">
         {p.running ? (

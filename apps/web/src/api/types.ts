@@ -21,6 +21,8 @@ export interface Health {
   /** "static-snapshot" when served as pre-computed JSON without a live solver (public static deployment). */
   deployment?: string;
   snapshot_created_utc?: string;
+  /** Problem-size limits enforced by this server (time steps). */
+  limits?: { simulate?: number; investment?: number; stochastic_total?: number };
 }
 
 export interface Equation {

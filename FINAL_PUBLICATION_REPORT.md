@@ -7,7 +7,8 @@ Date: 2026-10-30. Owner: Ajsel Budlla (GitHub `Ajsel28`, Netlify team "Ajsel").
 |---|---|
 | GitHub repository (public, MIT) | https://github.com/Ajsel28/hydroflex-ai |
 | Release v0.1.0 (video, paper, poster, captions) | https://github.com/Ajsel28/hydroflex-ai/releases/tag/v0.1.0 |
-| Public website (static snapshot) | https://hydroflex-ai.netlify.app |
+| Public website | https://hydroflex-ai.netlify.app |
+| Live solver API (Render, free plan) | https://hydroflex-api.onrender.com/api/health |
 | Paper PDF (web) | https://hydroflex-ai.netlify.app/HydroFlex_AI_Research_Paper.pdf (also `/api/paper`) |
 | Poster PDF (web) | https://hydroflex-ai.netlify.app/HydroFlex_AI_Poster.pdf |
 | Demo video (web, streams with range requests) | https://hydroflex-ai.netlify.app/HydroFlex_AI_Demo.mp4 |
@@ -83,3 +84,16 @@ cd apps/web && node ../../video/src/capture.mjs && cd ../.. && python video/src/
 cd apps/web && VITE_API_BASE= npm run build && cd ../.. && python scripts/build_static_site.py \
   && netlify deploy --prod --dir apps/web/dist --site 4d36041f-09df-4df9-a742-6c509f5977eb
 ```
+
+## Update — live backend connected (2026-10-30)
+- Render backend `https://hydroflex-api.onrender.com` (root `render.yaml`, Docker, free plan, auto-deploy from `main`).
+- Frontend production build (`npm run build:netlify`, `apps/web/.env.netlify`): reference data same-origin from Netlify;
+  health, optimisation POSTs, run registry and session runs go directly to Render. CORS on the backend allows
+  `https://hydroflex-ai.netlify.app` (GET, POST, `content-type`), verified by preflight.
+- `/api/health` now reports the server's problem-size limits; the Lab validates against them, and 422 messages state
+  the server limit.
+- End-to-end from the public site (`apps/web/e2e/public-live.mjs`): live 168-h run Optimal in ~3 s; imports 2.0 GWh,
+  matching the verified reference (−3,778.9 kEUR objective); no CORS or console errors. Production API checks:
+  drought + battery week 1,048.6 kEUR (matches); investment 168 h → PV +629 MW; stochastic 5 × 4 weeks, CVaR
+  λ = 1 → PV +629 MW in ~21 s (consistent with VSS = 0); oversized requests → 422.
+- The free instance sleeps when idle: the first request after a pause takes about a minute.

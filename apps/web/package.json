@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "geo": "node scripts/extract-geo.mjs"
+    "geo": "node scripts/extract-geo.mjs",
+    "build:netlify": "tsc --noEmit && vite build --mode netlify"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

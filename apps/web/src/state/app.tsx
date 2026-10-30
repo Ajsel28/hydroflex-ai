@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { applyServerLimits } from '../lib/validation';
 import { ApiError, api, primeExperiment } from '../api/client';
 import type { Health, InvestmentRequest, RunPayload, SimulateRequest, StochasticRequest } from '../api/types';
 import { cleanLabel } from '../lib/format';
@@ -58,6 +59,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         .health({ signal: ctrl.signal })
         .then((h) => {
           if (!alive) return;
+          applyServerLimits(h.limits);
           setHealth(h);
           setApiOnline(true);
         })

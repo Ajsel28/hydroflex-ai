@@ -16,14 +16,15 @@ Ajsel Budlla · Whitman College · Biochemistry, Biophysics and Molecular Biolog
 
 | | |
 |---|---|
-| **Live website** (static snapshot of the verified reference experiments) | https://hydroflex-ai.netlify.app |
+| **Live website** (reference experiments + live HiGHS solver on Render) | https://hydroflex-ai.netlify.app |
+| **Live solver API** | https://hydroflex-api.onrender.com/api/health |
 | **Research paper (PDF, LaTeX via Tectonic, 30 pp.)** | [`research/paper/HydroFlex_AI_Research_Paper.pdf`](research/paper/HydroFlex_AI_Research_Paper.pdf) |
 | **Poster (A0 PDF)** | [`research/poster/HydroFlex_AI_Poster.pdf`](research/poster/HydroFlex_AI_Poster.pdf) |
 | **Demo video (MP4, 1:56, 1080p)** | [release v0.1.0](https://github.com/Ajsel28/hydroflex-ai/releases/tag/v0.1.0) · [online](https://hydroflex-ai.netlify.app/HydroFlex_AI_Demo.mp4) · captions [`video/HydroFlex_AI_Demo_Captions.srt`](video/HydroFlex_AI_Demo_Captions.srt) |
 | **Executive summary / policy brief** | [`research/EXECUTIVE_SUMMARY.md`](research/EXECUTIVE_SUMMARY.md) · [`research/POLICY_BRIEF.md`](research/POLICY_BRIEF.md) |
 
-The public website serves pre-computed, verified reference experiments (it shows a "static deployment" banner).
-**Live HiGHS optimisation runs need the Python API**: run it locally (below) or deploy `Dockerfile.api`.
+The public website shows the verified reference experiments and runs **live HiGHS optimisations** on the Render
+backend (free tier: limited problem sizes; the first request after idling wakes the instance in about a minute).
 
 ![Mission Control](docs/screenshots/mission.png)
 
@@ -144,14 +145,21 @@ Compiled PDF: `research/paper/HydroFlex_AI_Research_Paper.pdf`. To rebuild witho
 download the portable [Tectonic](https://tectonic-typesetting.github.io) binary and run `tectonic -X compile main.tex`
 in `research/paper` (or use `latexmk -pdf main.tex` with TeX Live/MiKTeX).
 
-## Deployment
-- **Frontend (live):** https://hydroflex-ai.netlify.app — static build plus JSON snapshots of the reference
-  experiments, produced by the real API (`scripts/build_static_site.py`):
-  `cd apps/web && VITE_API_BASE= npm run build && cd ../.. && python scripts/build_static_site.py && netlify deploy --prod --dir apps/web/dist`.
-- **Backend (live solver):** the optimiser needs a persistent Python host; it cannot run on static hosting.
-  `Dockerfile.api` (health check `/api/health`) and `render.yaml` (root-level Render Blueprint: free plan, Docker, free-tier limits via `HYDROFLEX_MAX_*_STEPS`)
-  are ready. Once it is deployed, add `/api/*  https://<backend>/api/:splat  200` at the top of `apps/web/dist/_redirects`
-  (or rebuild with `VITE_API_BASE=https://<backend>`) to enable live runs on the public site.
+## Deployment (live)
+| Component | URL | Notes |
+|---|---|---|
+| Frontend | https://hydroflex-ai.netlify.app | Netlify. Reference experiments, metadata and provenance served as same-origin JSON snapshots produced by the real API (`scripts/build_static_site.py`). |
+| Live solver API | https://hydroflex-api.onrender.com (`/api/health`) | Render free plan, Docker (`Dockerfile.api`, root `render.yaml`), auto-deploys from `main`. |
+
+- The browser calls the Render API **directly** (CORS allows `https://hydroflex-ai.netlify.app`) for health, live
+  optimisation runs and the run registry; reference artefacts (`ref-*`, `exp-*`) load from Netlify. Configured in
+  `apps/web/.env.netlify` (`VITE_API_BASE=` same-origin, `VITE_LIVE_API_BASE=https://hydroflex-api.onrender.com`).
+- Free-tier limits (set in `render.yaml`, reported by `/api/health` and applied by the Lab): 720 steps for dispatch
+  and investment, 3,360 scenario-steps for stochastic runs (5 scenarios × 4 hourly weeks); 12 runs / 10 min per
+  visitor. Full-year and 8-week stochastic studies are available as the verified reference experiments.
+- The free instance sleeps when idle; the first request after a pause takes about a minute (the Lab shows this).
+- Redeploy the frontend:
+  `cd apps/web && npm run build:netlify && cd ../.. && python scripts/build_static_site.py && netlify deploy --prod --dir apps/web/dist`.
 - Live runs are rate-limited and size-capped (`apps/api/hydroflex_api/main.py`).
 
 ## Documentation

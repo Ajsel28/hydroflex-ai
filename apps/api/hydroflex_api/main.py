@@ -93,7 +93,8 @@ def health() -> dict[str, Any]:
     df, mode = load_profiles()
     return {"status": "ok", "version": __version__, "solver": "HiGHS", "highspy": getattr(highspy, "__version__", ""),
             "data_mode": mode, "reference_year": df.attrs.get("year"), "solver_busy": _busy["running"],
-            "reference_experiments": sum(1 for r in registry.list_runs() if r["reference"])}
+            "reference_experiments": sum(1 for r in registry.list_runs() if r["reference"]),
+            "limits": MAX_STEPS, "rate_limit": {"runs": RATE_LIMIT, "window_s": RATE_WINDOW_S}}
 
 
 @app.get("/api/model/metadata")
@@ -150,7 +151,7 @@ async def optimize_investments(req: InvestmentRequest, request: Request) -> JSON
     steps = req.horizon.hours // req.horizon.resolution_h
     if steps > MAX_STEPS["investment"]:
         raise HTTPException(422, f"investment runs are limited to {MAX_STEPS['investment']} time steps "
-                                 "(e.g. a full year at 3-hourly resolution)")
+                                 f"on this server (requested {steps}); shorten the horizon or use a coarser time step")
     _rate_check(request)
     return JSONResponse(await _run(run_investment, req.model_dump()))
 
@@ -161,7 +162,7 @@ async def optimize_stochastic(req: StochasticRequest, request: Request) -> JSONR
     steps = req.horizon.hours // req.horizon.resolution_h if req.method == "annual_chronological" else 168 * req.n_weeks
     if steps * n > MAX_STEPS["stochastic_total"]:
         raise HTTPException(422, f"stochastic runs are limited to {MAX_STEPS['stochastic_total']} scenario-steps "
-                                 f"({n} scenarios); use 6-hourly resolution for a full year")
+                                 f"on this server ({n} scenarios × {steps} steps requested); use fewer representative weeks")
     _rate_check(request)
     return JSONResponse(await _run(run_stochastic, req.model_dump()))
 

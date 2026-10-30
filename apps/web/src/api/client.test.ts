@@ -62,3 +62,23 @@ describe('request', () => {
     expect(err.message).toBe('Request failed (HTTP 500)');
   });
 });
+
+describe('reference vs live routing', () => {
+  it('classifies pipeline artefacts as reference ids', async () => {
+    const { isReferenceId } = await import('./client');
+    expect(isReferenceId('ref-A-normal-annual')).toBe(true);
+    expect(isReferenceId('exp-validation')).toBe(true);
+    expect(isReferenceId('run-20261030-201836-f8b34c')).toBe(false);
+  });
+
+  it('sends requests to the base passed in options', async () => {
+    const { request } = await import('./client');
+    const seen: string[] = [];
+    const f = (async (url: string) => {
+      seen.push(url);
+      return new Response(JSON.stringify({ status: 'ok' }), { status: 200 });
+    }) as unknown as typeof fetch;
+    await request('/api/health', {}, { fetchImpl: f, base: 'https://hydroflex-api.onrender.com' });
+    expect(seen).toEqual(['https://hydroflex-api.onrender.com/api/health']);
+  });
+});
