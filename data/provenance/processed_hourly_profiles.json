@@ -1,0 +1,32 @@
+{
+  "dataset_id": "processed_hourly_profiles",
+  "date_accessed": "2026-10-30",
+  "time_standard": "UTC",
+  "geographic_coverage": "Albania (aggregate single-node representation)",
+  "name": "HydroFlex hourly model inputs (one file per weather year 2019\u20132023)",
+  "provider": "Derived by HydroFlex AI from NASA POWER (see raw provenance records)",
+  "source_url": "local: data/processed/hourly_profiles_<year>.csv",
+  "time_coverage": "2019\u20132023, 8760 h per year (29 Feb removed in leap years)",
+  "temporal_resolution": "hourly",
+  "units": {
+    "pv_cf": "p.u. of installed MWp",
+    "wind_cf": "p.u. of installed MW",
+    "demand_mw": "MW",
+    "import_price_eur_mwh": "EUR/MWh",
+    "drin_inflow_hm3_per_h": "hm3/h",
+    "ror_avail_mw": "MW",
+    "t2m_tirana_c": "degC"
+  },
+  "nature": {
+    "pv_cf": "weather-derived",
+    "wind_cf": "weather-derived",
+    "demand_mw": "synthetic (SYNTHETIC RESEARCH DEMONSTRATION DATA \u2014 NOT OBSERVED GRID OPERATIONS)",
+    "import_price_eur_mwh": "synthetic (SYNTHETIC RESEARCH DEMONSTRATION DATA \u2014 NOT OBSERVED GRID OPERATIONS)",
+    "drin_inflow_hm3_per_h": "reconstructed (conceptual hydrology, not gauged)",
+    "ror_avail_mw": "reconstructed (conceptual hydrology, not gauged)",
+    "t2m_tirana_c": "reanalysis"
+  },
+  "processing": "See hydroflex.data.profiles; reference year selected as the 2019\u20132023 year whose reconstructed inflow index is closest to the 2001\u20132023 median: 2022",
+  "random_seed": "20260101 + year",
+  "license": "Derived data released with the repository (MIT); NASA POWER acknowledgement applies"
+}

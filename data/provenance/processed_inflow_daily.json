@@ -1,0 +1,18 @@
+{
+  "dataset_id": "processed_inflow_daily",
+  "date_accessed": "2026-10-30",
+  "time_standard": "UTC",
+  "geographic_coverage": "Albania (aggregate single-node representation)",
+  "name": "Reconstructed daily Drin inflow and run-of-river availability 2001\u20132023",
+  "provider": "Derived by HydroFlex AI from NASA POWER daily precipitation and temperature",
+  "source_url": "local: data/processed/inflow_daily_2001_2023.csv",
+  "time_coverage": "2001-01-01 to 2023-12-31 (2000 used as spin-up)",
+  "temporal_resolution": "daily",
+  "units": {
+    "drin_inflow_hm3_per_h": "hm3/h (daily mean)",
+    "ror_avail_mw": "MW"
+  },
+  "nature": "reconstructed \u2014 volume scaled to an assumed long-run mean energy; NOT observed inflows",
+  "processing": "Degree-day snow model + two parallel linear reservoirs; parameters assumed, not calibrated against gauge records (none were accessible)",
+  "license": "Derived data (MIT)"
+}

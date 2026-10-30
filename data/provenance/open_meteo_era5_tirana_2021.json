@@ -1,0 +1,20 @@
+{
+  "dataset_id": "open_meteo_era5_tirana_2021",
+  "date_accessed": "2026-10-29",
+  "name": "Open-Meteo historical weather (ERA5) \u2014 Tirana, 2021",
+  "provider": "Open-Meteo.com (Copernicus ERA5 reanalysis)",
+  "source_url": "https://archive-api.open-meteo.com/v1/archive",
+  "geographic_coverage": "point lat=41.33, lon=19.82",
+  "time_coverage": "2021-01-01 to 2021-12-31",
+  "temporal_resolution": "hourly",
+  "time_standard": "UTC (GMT)",
+  "units": {
+    "temperature_2m": "degC",
+    "shortwave_radiation": "W/m^2",
+    "wind_speed_100m": "km/h"
+  },
+  "license": "Open-Meteo data CC BY 4.0; ERA5 contains modified Copernicus Climate Change Service information",
+  "processing": "Used only to cross-check NASA POWER temperature and irradiance (reanalysis vs reanalysis)",
+  "nature": "reanalysis",
+  "role": "cross-check"
+}

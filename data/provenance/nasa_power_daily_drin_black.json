@@ -1,0 +1,19 @@
+{
+  "dataset_id": "nasa_power_daily_drin_black",
+  "date_accessed": "2026-10-29",
+  "name": "NASA POWER daily precipitation \u2014 Black Drin basin",
+  "provider": "NASA Langley Research Center, POWER Project",
+  "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR,T2M&community=RE&longitude=20.55&latitude=41.55",
+  "geographic_coverage": "point lat=41.55, lon=20.55",
+  "time_coverage": "2000-01-01 to 2023-12-31",
+  "temporal_resolution": "daily",
+  "time_standard": "UTC",
+  "units": {
+    "PRECTOTCORR": "mm/day (bias-corrected total precipitation, MERRA-2)",
+    "T2M": "degC"
+  },
+  "license": "NASA POWER data are freely available; acknowledgement requested by NASA POWER",
+  "processing": "Basin-averaged; transformed by a conceptual linear-reservoir rainfall-runoff model into a RECONSTRUCTED inflow index (hydroflex.data.profiles.build_inflow)",
+  "nature": "observed-derived reanalysis precipitation; downstream inflows are reconstructed, NOT gauged",
+  "role": "hydro"
+}

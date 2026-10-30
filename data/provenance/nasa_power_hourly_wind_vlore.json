@@ -1,0 +1,21 @@
+{
+  "dataset_id": "nasa_power_hourly_wind_vlore",
+  "date_accessed": "2026-10-29",
+  "name": "NASA POWER hourly meteorology \u2014 Vlor\u00eb\u2013Karaburun coast",
+  "provider": "NASA Langley Research Center, POWER Project",
+  "source_url": "https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=ALLSKY_SFC_SW_DWN,T2M,WS50M,WS10M&community=RE&longitude=19.35&latitude=40.4",
+  "geographic_coverage": "point lat=40.4, lon=19.35 (native grid ~0.5\u00b0x0.625\u00b0 meteorology, 1\u00b0x1\u00b0 solar)",
+  "time_coverage": "2019-01-01 to 2023-12-31",
+  "temporal_resolution": "hourly",
+  "time_standard": "UTC",
+  "units": {
+    "ALLSKY_SFC_SW_DWN": "W/m^2 (all-sky surface shortwave downward irradiance)",
+    "T2M": "degC (2 m air temperature)",
+    "WS50M": "m/s (50 m wind speed)",
+    "WS10M": "m/s (10 m wind speed)"
+  },
+  "license": "NASA POWER data are freely available; acknowledgement requested by NASA POWER",
+  "processing": "Raw CSV as delivered; converted to capacity factors / demand drivers in hydroflex.data.profiles",
+  "nature": "observed-derived reanalysis / satellite estimate (NOT measured power production)",
+  "role": "wind"
+}

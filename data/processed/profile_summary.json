@@ -1,0 +1,64 @@
+{
+  "reference_year": 2022,
+  "years": {
+    "2019": {
+      "pv_cf_mean": 0.1726,
+      "wind_cf_mean": 0.119,
+      "demand_twh": 8.0,
+      "demand_peak_mw": 1718.6,
+      "drin_inflow_hm3": 6151.9,
+      "ror_energy_twh": 2.249,
+      "import_price_mean": 105.0,
+      "inflow_index": 0.828
+    },
+    "2020": {
+      "pv_cf_mean": 0.1759,
+      "wind_cf_mean": 0.1116,
+      "demand_twh": 8.0,
+      "demand_peak_mw": 1612.6,
+      "drin_inflow_hm3": 6397.7,
+      "ror_energy_twh": 2.266,
+      "import_price_mean": 105.0,
+      "inflow_index": 0.863
+    },
+    "2021": {
+      "pv_cf_mean": 0.1731,
+      "wind_cf_mean": 0.1173,
+      "demand_twh": 8.0,
+      "demand_peak_mw": 1618.3,
+      "drin_inflow_hm3": 8895.9,
+      "ror_energy_twh": 2.994,
+      "import_price_mean": 105.0,
+      "inflow_index": 1.197
+    },
+    "2022": {
+      "pv_cf_mean": 0.1752,
+      "wind_cf_mean": 0.1084,
+      "demand_twh": 8.0,
+      "demand_peak_mw": 1640.9,
+      "drin_inflow_hm3": 7622.1,
+      "ror_energy_twh": 2.568,
+      "import_price_mean": 105.0,
+      "inflow_index": 1.025
+    },
+    "2023": {
+      "pv_cf_mean": 0.1698,
+      "wind_cf_mean": 0.1111,
+      "demand_twh": 8.0,
+      "demand_peak_mw": 1633.6,
+      "drin_inflow_hm3": 8293.7,
+      "ror_energy_twh": 2.844,
+      "import_price_mean": 105.0,
+      "inflow_index": 1.116
+    }
+  },
+  "inflow_index_quantiles": {
+    "0.05": 0.784,
+    "0.25": 0.883,
+    "0.5": 0.99,
+    "0.75": 1.107,
+    "0.95": 1.261
+  },
+  "inflow_index_min_year": 2011,
+  "inflow_index_min": 0.67
+}
