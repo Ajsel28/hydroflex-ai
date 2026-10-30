@@ -1,0 +1,32 @@
+\section{Computational implementation}
+\label{sec:implementation}
+
+\paragraph{Software.} The model is implemented in Python~3.13 (NumPy, pandas, SciPy). The primary engine is a
+vectorised sparse LP builder that assembles the constraint matrix in coordinate form and passes it to HiGHS
+\cite{huangfu2018highs} (highspy~1.15) as a column-wise model. An independent implementation of the deterministic
+model in PyPSA~1.4 \cite{brown2018pypsa}, with linopy and HiGHS, serves as a cross-check. In that version the
+reservoir is a \texttt{StorageUnit} whose state of charge is $(V-V^{\min})\kappa$ and whose inflow is $I\kappa$.
+The battery is a \texttt{Store} with charger and discharger \texttt{Link}s, exports are a generator with negative
+output, and shortage is a VOLL-priced generator. A FastAPI service exposes the same functions to the
+interactive application.
+
+\paragraph{Solver configuration.} Single-scenario dispatch problems use HiGHS' default strategy. Chronological
+multi-scenario and annual investment problems use the interior-point method with crossover. Representative-week
+problems use dual simplex: the first-stage capacity columns appear in every hourly row, producing dense columns
+that caused interior-point iterations to stall (Table~\ref{tab:solver}). Live API runs are limited to 8{,}760
+steps for dispatch, 2{,}920 steps for investment and 7{,}300 scenario-steps for stochastic runs, with solver
+time limits and a per-client rate limit.
+
+\paragraph{Verification.} Sixty-five automated tests check the following: energy balance; battery energy
+conservation; reservoir water conservation; capacity, interconnector and budget limits; non-negativity of
+unserved energy; zero-solar, zero-battery, zero-import and zero-demand behaviour; visible shortages under
+insufficient supply; the non-increase of unserved energy as VOLL rises; correct reporting of an infeasible
+configuration; reconciliation of the objective with its components (including CVaR); non-negative VSS; and
+the subgradient relation between duals and finite differences. They also test the API contract and data
+provenance completeness. The native model is compared with PyPSA on five cases
+(Table~\ref{tab:validation}).
+
+\paragraph{Reproducibility.} \texttt{python -m hydroflex.experiments.run_all} executes every experiment. It
+writes machine-readable results to \texttt{results/experiments/}, records software versions, seeds and timings
+in a manifest, and regenerates all tables and figures in this paper. Synthetic series use fixed seeds
+(\texttt{20260101+year}).

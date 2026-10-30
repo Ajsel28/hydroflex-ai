@@ -83,13 +83,20 @@ def main() -> None:
         g = _by(D)
         s = {sc: {be: g[f"{sc}|b0/0"]["opex_keur_annualised"] - g[f"{sc}|b{bp}/{be}"]["opex_keur_annualised"]
                   for bp, be in ((200, 800), (400, 1600), (800, 3200))} for sc in ("normal", "severe_drought")}
+        from hydroflex.config import TechnologyCosts
+
+        ann = TechnologyCosts().annualised_keur_per_unit()
+        cost_ann = {be: be * ann["battery_energy"] + bp * ann["battery_power"]
+                    for bp, be in ((200, 800), (400, 1600), (800, 3200))}
         ex.append({"id": "D", "title": "Batteries without new renewables",
                    "hypothesis": "Battery operating value is modest relative to its annualised cost when reservoir hydro "
                                  "already provides flexibility.",
                    "configuration": "200/800, 400/1600, 800/3200 MW/MWh, annual hourly",
                    "finding": "Annual operating saving (MEUR/yr) normal: " + ", ".join(f"{k} MWh: {v / 1e3:.1f}" for k, v in s["normal"].items())
-                              + "; severe: " + ", ".join(f"{k} MWh: {v / 1e3:.1f}" for k, v in s["severe_drought"].items()) + ".",
-                   "supported": None, "metrics": s,
+                              + "; severe: " + ", ".join(f"{k} MWh: {v / 1e3:.1f}" for k, v in s["severe_drought"].items())
+                              + ". Annualised cost (MEUR/yr): " + ", ".join(f"{k} MWh: {v / 1e3:.1f}" for k, v in cost_ann.items()) + ".",
+                   "supported": all(v < cost_ann[be] for sc in s.values() for be, v in sc.items()),
+                   "metrics": {"saving_keur": s, "annualised_cost_keur": cost_ann},
                    "limitations": "No ancillary-service, reserve or capacity revenues are modelled; these are often the main "
                                   "value streams of batteries."})
     E = load("exp-E")
@@ -147,13 +154,17 @@ def main() -> None:
                    "hypothesis": "A stochastic, risk-aware plan reduces expected cost and tail risk relative to planning "
                                  "for normal conditions.",
                    "configuration": "5 scenarios, 8 weeks, budget 500 MEUR, CVaR α=0.9, λ=1",
-                   "finding": f"VSS = {c['vss_keur_annualised'] / 1e3:.2f} MEUR/yr; EVPI = {c['evpi_keur_annualised'] / 1e3:.2f} MEUR/yr; "
-                              f"CVaR(0.9) of operating cost: stochastic {c['rp_cvar_keur_annualised'] / 1e3:.1f} vs deterministic "
-                              f"{(c['eev_cvar_keur_annualised'] or 0) / 1e3:.1f} MEUR/yr. Stochastic additions: "
+                   "finding": f"Risk-adjusted VSS = {c['vss_keur_annualised'] / 1e3:.1f} MEUR/yr. The stochastic plan costs "
+                              f"{c['expected_cost_premium_keur_annualised'] / 1e3:+.1f} MEUR/yr in expected cost (price of risk aversion) "
+                              f"and lowers CVaR(0.9) of operating cost from {(c['eev_cvar_keur_annualised'] or 0) / 1e3:.1f} to "
+                              f"{c['rp_cvar_keur_annualised'] / 1e3:.1f} MEUR/yr. Stochastic additions: "
                               + ", ".join(f"{k} {v:.0f}" for k, v in I_["additions"].items())
-                              + "; deterministic additions: " + ", ".join(f"{k} {v:.0f}" for k, v in c["deterministic_plan_additions"].items()) + ".",
-                   "supported": c["vss_keur_annualised"] > 1.0, "metrics": {k: c[k] for k in ("vss_keur_annualised", "evpi_keur_annualised",
-                                                                                               "rp_cvar_keur_annualised", "eev_cvar_keur_annualised")},
+                              + "; deterministic (normal-year) additions: "
+                              + ", ".join(f"{k} {v:.0f}" for k, v in c["deterministic_plan_additions"].items()) + ".",
+                   "supported": c["vss_keur_annualised"] > 1.0 and (c.get("cvar_reduction_keur_annualised") or 0) > 0,
+                   "metrics": {k: c.get(k) for k in ("vss_keur_annualised", "expected_cost_premium_keur_annualised",
+                                                      "rp_cvar_keur_annualised", "eev_cvar_keur_annualised",
+                                                      "cvar_reduction_keur_annualised")},
                    "limitations": "Scenario probabilities are partly assumed; five scenarios cannot represent the full "
                                   "distribution of climate outcomes."})
     J = load("ref-J-marginal")
@@ -170,6 +181,32 @@ def main() -> None:
                                     (r["fd_right_keur_per_unit_yr"] - 1e-3 <= r["dual_keur_per_unit_yr"] <= r["fd_left_keur_per_unit_yr"] + 1e-3)
                                     for r in J["rows"] if r["dual_reliable"]),
                    "metrics": {}, "limitations": "Local values around one fleet; not valid for large capacity changes."})
+    K = load("exp-H-chronological-check")
+    if K:
+        rows = K["rows"]
+        err = [abs(r["repweek_expected_total_keur"] - r["chrono_expected_total_keur"]) / 1e3 for r in rows]
+        same_best = K["rank_chronological"][0] == K["rank_representative_weeks"][0]
+        ex.append({"id": "K", "title": "Representative weeks vs full-year chronology",
+                   "hypothesis": "Strategy rankings from the 8-week representative-period model agree with full-year "
+                                 "chronological evaluation.",
+                   "configuration": "7 plans × 5 scenarios, 8760 h hourly, fixed fleets",
+                   "finding": f"Absolute difference in expected total cost: {min(err):.1f}–{max(err):.1f} MEUR/yr. Ranking "
+                              f"(chronological): {', '.join(K['rank_chronological'])}; (representative weeks): "
+                              f"{', '.join(K['rank_representative_weeks'])}.",
+                   "supported": same_best, "metrics": {"abs_error_meur": err},
+                   "limitations": "Chronological runs use V_T = V_0 per scenario year; the representative-week model uses "
+                                  "boundaries from the existing fleet."})
+    R = load("exp-resolution")
+    if R:
+        g = _by(R)
+        val = {r: g[f"res{r}|nobatt"]["opex_keur_annualised"] - g[f"res{r}"]["opex_keur_annualised"]
+               for r in (1, 2, 3, 6) if f"res{r}" in g and f"res{r}|nobatt" in g}
+        ex.append({"id": "R", "title": "Temporal-resolution sensitivity",
+                   "hypothesis": "Coarser time steps understate the operating value of short-duration storage.",
+                   "configuration": "battery 400 MW/1600 MWh, normal year, Δt = 1, 2, 3, 6 h",
+                   "finding": "Battery operating saving (MEUR/yr): " + ", ".join(f"{k} h: {v / 1e3:.1f}" for k, v in val.items()) + ".",
+                   "supported": bool(val) and val.get(6, 0) < val.get(1, 0), "metrics": val,
+                   "limitations": "One battery size and one scenario."})
     save("ref-summary", {"kind": "summary", "experiments": ex})
     print("  summary: ref-summary.json with", len(ex), "experiments")
 

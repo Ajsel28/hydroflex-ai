@@ -1,0 +1,21 @@
+{
+  "purpose": "Verified reference sequence for the 2-minute conference recording. Every step is a real POST to the API. Expected values were produced by the experiment pipeline (results/experiments/ref-demo-week.json, field demo_verification); the model is deterministic, so a live re-run reproduces them.",
+  "api_base": "http://127.0.0.1:8000",
+  "steps": [
+    {"id": "normal_week", "endpoint": "/api/simulate",
+     "body": {"scenario": "normal", "horizon": {"hours": 168, "start_day": 14, "resolution_h": 1}, "system": {}},
+     "expected": {"status": "Optimal", "ens_mwh": 0.0, "imports_mwh": 2016.5, "objective_keur": -3778.9}},
+    {"id": "severe_drought_week", "endpoint": "/api/simulate",
+     "body": {"scenario": "severe_drought", "horizon": {"hours": 168, "start_day": 14, "resolution_h": 1}, "system": {}},
+     "expected": {"status": "Optimal", "ens_mwh": 0.0, "imports_mwh": 29396.0, "objective_keur": 1399.7}},
+    {"id": "severe_drought_with_battery", "endpoint": "/api/simulate",
+     "body": {"scenario": "severe_drought", "horizon": {"hours": 168, "start_day": 14, "resolution_h": 1},
+              "system": {"battery_power_mw": 300, "battery_energy_mwh": 1200}},
+     "expected": {"status": "Optimal", "ens_mwh": 0.0, "imports_mwh": 36702.0, "objective_keur": 1048.6,
+                  "battery_throughput_mwh": 9145.1}},
+    {"id": "frontier", "endpoint": "/api/experiments/ref-H-frontier", "note": "reference experiment, labelled as such in the UI"},
+    {"id": "risk", "endpoint": "/api/experiments/ref-I-stochastic", "note": "reference experiment, labelled as such in the UI"}
+  ],
+  "units": "objective_keur = operating cost of the 168-h window in thousand EUR (negative = net export revenue)",
+  "data_label": "SYNTHETIC RESEARCH DEMONSTRATION DATA — NOT OBSERVED GRID OPERATIONS (demand and prices); inflows reconstructed; PV/wind weather-derived"
+}

@@ -46,3 +46,36 @@ All entries are written during the build. Times are local (session date 2026-10-
 ## Stage 5 — Tests
 - 48 tests pass (physics, conservation, behaviour, infeasibility, budget, CVaR reconciliation, VSS ≥ 0,
   dual-vs-finite-difference subgradient check, PyPSA cross-check, data/provenance checks).
+
+## Stage 6 — API and frontend
+- FastAPI service (`apps/api/hydroflex_api`): health, metadata, data sources/profiles, scenarios, simulate,
+  investments, stochastic, experiment registry (SQLite + JSON), downloads (JSON/CSV), paper. 13 API tests pass.
+- Frontend (`apps/web`, React 19 + TS strict + Vite 8 + Tailwind 4 + Plotly + KaTeX + Natural Earth map) built by a
+  delegated frontend agent: 10 pages; typecheck, lint, 39 unit tests, build and 3 Playwright e2e tests pass
+  (re-verified independently: typecheck/lint/39 tests pass).
+- Data-label "mojibake" reported by the frontend agent was traced: the API emits correct UTF-8 (C2 B7); no backend bug.
+- Registry bug found and fixed: reference experiments written after API start were not indexed → auto re-index.
+
+## Stage 7 — Stochastic formulation: findings, failures and corrections
+1. Full-year 6-hourly stochastic programme (5 scenarios, 87,616 vars): Optimal in 71 s, but VSS = EVPI = 0 and no
+   battery: 6-h steps erase intra-day arbitrage (documented; motivates the resolution study).
+2. Representative-week formulation added (8 hourly weeks × 5 scenarios, nested reservoir boundaries, grouped CVaR).
+   IPM stalled (time limit 200 s) because first-stage columns are dense; dual simplex solves in ~26 s → simplex used.
+3. **Methodological error found and corrected.** A 2-pass scheme recomputed reservoir boundaries with the pass-1
+   fleet; passes did not converge, and plan evaluations used different boundaries than the optimisation. The
+   "robust" plan's apparent CVaR advantage was largely an artefact (its compound-shock cost was 646 MEUR/yr in the
+   optimisation but 811 MEUR/yr when re-evaluated consistently), and the expected-cost VSS was negative because it
+   ignored the risk term. Fix: fleet-independent boundaries (existing fleet) shared by RP, EEV, WS and all frontier
+   evaluations; VSS on the risk-adjusted objective; EVPI reported only for λ = 0. Superseded artefacts were moved to
+   `results/superseded/` (kept for transparency, not used).
+4. Added a full-year chronological re-evaluation of key plans (exp-H-chronological-check) to quantify the
+   representative-week approximation error.
+5. **Second methodological correction (water values).** The full-year chronological check (hard, fleet-independent
+   boundaries) showed: no unserved energy in any plan chronologically, but the representative-week model overstated
+   expected cost by 0.6–17.5 MEUR/yr and produced spurious shortages in sampled weeks. Chronologically, the
+   PV-only plan beat the "robust" battery plan on both expected cost and CVaR — the battery's tail-risk benefit was
+   an artefact of rigid week boundaries. Fix: the end-of-week volume is valued at the coarse annual run's marginal
+   water value (dual of the water balance) instead of being pinned. Spot check (expected total cost, MEUR/yr;
+   chronological / water-value / hard): baseline 107.7 / 109.4 / 128.1; PV-only 66.7 / 70.9 / 81.1;
+   old robust plan 76.3 / 80.3 / 83.1; budget-1500 plan 4.2 / 12.9 / 21.7; no spurious shortage. Hard-boundary
+   artefacts moved to `results/superseded/hard_boundary/`. New test `test_terminal_water_value_reconciliation`.

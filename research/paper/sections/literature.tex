@@ -1,0 +1,50 @@
+\section{Literature review}
+\label{sec:lit}
+
+\paragraph{Hydropower-dependent systems and climate risk.}
+Hydro-dominated systems face supply risk that is driven by water availability rather than by generating
+capacity. At the global scale, van Vliet et al.\ \cite{vanvliet2016vulnerability} showed that a large share of
+hydropower and thermoelectric capacity is vulnerable to reduced streamflow and warmer water under climate change.
+They also argued that adaptation options such as efficiency gains and fuel switching matter. For Albania,
+IRENA's readiness assessment highlights both the dominance of the Drin cascade and the projected decline in
+hydro output \cite{irena2021rra}. Reservoir operation has a long literature of its own
+\cite{labadie2004reservoir}. Stochastic dual dynamic programming (SDDP) \cite{pereira1991sddp} remains the
+reference method for multi-stage hydrothermal scheduling under inflow uncertainty. We use a simpler two-stage
+structure that is adequate for investment screening (Section~\ref{sec:formulation}), and we note SDDP as a
+natural extension.
+
+\paragraph{Renewable capacity expansion and open models.}
+Linear capacity-expansion models that co-optimise investment and hourly dispatch are standard tools
+\cite{pfenninger2014modeling}. PyPSA \cite{brown2018pypsa} and its European application PyPSA-Eur
+\cite{horsch2018pypsaeur} established open, reproducible practice for such models. Studies with them have
+shown, for example, the value of transmission cooperation in highly renewable systems
+\cite{schlachtberger2017cooperation}. Weather-derived capacity factors from reanalysis are widely used when
+measured output is unavailable. They require care, however, because reanalysis wind speeds are biased and
+need correction at the site level \cite{staffell2016wind,pfenninger2016pv,gelaro2017merra2,hersbach2020era5}.
+
+\paragraph{Flexibility and storage.}
+Reviews of flexibility options \cite{lund2015flexibility,kondziella2016flexibility} distinguish short-duration
+resources (batteries, demand response) from long-duration ones (reservoir hydro, interconnection). The value
+of short-duration storage depends strongly on the temporal resolution of the model: coarse time steps average
+away the intra-day variability that storage monetises \cite{poncelet2016temporal}. Representative-period
+methods reduce computation but must treat seasonal storage carefully \cite{kotzur2018seasonal}. Projected
+storage costs continue to fall \cite{schmidt2019storage}. The market value of variable renewables declines as
+their penetration rises \cite{hirth2013market}, which is directly relevant to solar-heavy expansion in a
+small system.
+
+\paragraph{Stochastic and risk-sensitive planning.}
+Two-stage stochastic programming \cite{birge2011stochastic} separates here-and-now investment from
+wait-and-see operation. The value of the stochastic solution (VSS) and the expected value of perfect
+information (EVPI) quantify, respectively, the benefit of modelling uncertainty and the cost of not knowing
+the future \cite{birge2011stochastic,madansky1960inequalities}. Conditional value at risk (CVaR) admits a
+linear representation \cite{rockafellar2000cvar,rockafellar2002cvar} and is widely used in electricity
+decision problems \cite{conejo2010decision}. Reliability is commonly priced through a value of lost load
+(VOLL), whose empirical estimates vary by an order of magnitude across countries and customer groups
+\cite{schroder2015voll}. This motivates the sensitivity analysis reported below.
+
+\paragraph{Gap.}
+We are not aware of an open, reproducible model of Albania that combines (i)~a physically explicit reservoir
+water balance, (ii)~independent battery power and energy investment, (iii)~an interconnector that is limited
+rather than infinite, (iv)~two-stage stochastic investment with CVaR, and (v)~a marginal-value analysis of
+flexibility with dual--finite-difference reconciliation. This work offers such a model as a transparent
+research prototype.

@@ -1,0 +1,143 @@
+\section{Results}
+\label{sec:results}
+
+Every number in this section is read from the experiment files in \texttt{results/experiments/}. All solves
+terminated with HiGHS status \emph{Optimal}. The maximum energy-balance residual was below $10^{-4}$~MW and
+the water-balance residual below $10^{-6}$~hm$^3$ in every run, and no simultaneous battery charging and
+discharging was detected. Table~\ref{tab:summary-findings} records whether each hypothesis was supported.
+
+\subsection{Reference operation and drought stress (Experiments A, B, F)}
+Table~\ref{tab:annual} summarises the full-year hourly runs with the existing fleet. Under normal conditions
+the synthetic demand of 8.00~TWh is fully served. Hydro supplies 6.77~TWh, and the interconnector is used in
+both directions: 2.00~TWh of imports and 1.23~TWh of exports, for net imports of 0.77~TWh. The reservoir
+works as a seasonal and daily arbitrage store. It imports in low-price hours and exports in high-price
+hours, so annual operating cost is only 40.8~MEUR. Drought shifts this balance. Hydro output falls to
+5.28~TWh with moderate drought and 4.06~TWh with severe drought. Net imports rise to 2.26 and 3.48~TWh, and
+operating cost rises to 192.7 and 324.5~MEUR/yr. The number of hours with imports at the interconnector limit
+grows from 91 to 203 and 380. \textbf{No energy is unserved in either drought case}. While the 900~MW
+interconnector is fully available, drought in this model is a \emph{financial and import-dependence} risk
+rather than a reliability risk. Figures~\ref{fig:dispatch} and~\ref{fig:reservoir} show how the dispatch and
+reservoir trajectories change.
+
+The compound shock combines severe drought with 8\% demand growth, 1.8$\times$ import prices and 70\%
+transfer availability. Operating cost rises to 727.1~MEUR/yr, imports sit at the derated limit for 4{,}220~h,
+and the mean shadow price is 209~EUR/MWh. Even so, demand is still fully served over the year.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig04_dispatch_normal_vs_drought.pdf}
+\caption{Hourly dispatch in a winter and a summer week under normal conditions and severe drought (existing
+fleet, full-year optimisation). Exports and battery charging are drawn below zero. In drought the reservoir
+covers fewer hours and imports fill the evening peaks.}
+\label{fig:dispatch}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig05_reservoir.pdf}
+\caption{(a) Volume trajectory of the aggregated Drin reservoir and (b) daily reservoir hydro output under the
+four presets (full-year hourly optimisation with $V_T=V_0$). The minimum operating volume is not reached in any
+preset. Drought lowers releases rather than draining the reservoir, because the cyclic terminal condition
+forces the deficit to be covered by imports.}
+\label{fig:reservoir}
+\end{figure}
+
+\input{tables/tab_annual}
+
+\subsection{Where reliability fails: interconnector availability and demand growth (Experiments F, G)}
+A uniform import-price shock leaves dispatch unchanged, because relative prices stay the same. Annual cost
+then rises linearly, from 324.5~MEUR at 1$\times$ to 968.4~MEUR at 3$\times$ (severe drought), with zero
+unserved energy (Table~\ref{tab:exp-F}). Shortage appears only when import \emph{availability} falls. Under
+severe drought with 8\% demand growth, availability of 75\% still serves all demand. At 50\%, 311~GWh are
+unserved over 999~h with a peak shortfall of 811~MW. At 35\% and 25\% availability, unserved energy rises
+to 1.40 and 2.16~TWh. These shortages are \emph{energy}-limited, not power-limited. With 50\% availability the
+annual supply that can be delivered (hydro + PV + 450~MW of imports $\times$ 8{,}760~h) falls short of demand.
+Consistent with this, a 400~MW / 1{,}600~MWh battery reduces unserved energy at 50\% availability by only 13\%
+(311 to 270~GWh). Demand growth shows the same threshold behaviour (Table~\ref{tab:exp-G},
+Fig.~\ref{fig:imports}c). With full interconnector availability, demand growth of up to 30\% is absorbed by
+imports. With 50\% availability, unserved energy is 0, 456, 1{,}201 and 1{,}969~GWh at growth of 0, 10, 20 and
+30\%, so loss-of-load hours rise from 0 to 4{,}088. In this model, therefore, the reliability of a
+hydro-dependent system in drought is governed mainly by the availability of interconnection. This matters
+because regional droughts can depress neighbours' export capacity at the same time.
+
+\input{tables/tab_exp_F}
+
+\subsection{Solar, storage and coordination (Experiments C, D, E)}
+\paragraph{Solar without storage.} Adding PV reduces gross imports with diminishing returns
+(Table~\ref{tab:exp-C}). Under normal conditions the reduction per added MW is 1{,}074, 898 and 699~MWh/MW
+for +500, +1{,}000 and +1{,}500~MW. Under severe drought it is larger (1{,}406, 1{,}254 and 1{,}022~MWh/MW),
+because a drier system exports less and imports more at the margin. Operating savings fall only slightly per
+MW (138 to 131~kEUR/MW-yr in the normal year), because surplus midday PV can still be exported at 85\% of the
+import price. Curtailment therefore stays small: at most 21~GWh, at +1{,}500~MW in the normal year. This
+result rests on the assumed export capacity and price ratio (Section~\ref{sec:sensitivity}). The annualised
+cost of PV is 80~kEUR/MW-yr, so under these assumptions every tested PV addition reduces total cost.
+
+\paragraph{Batteries without new renewables.} A battery earns only intra-day arbitrage. The annual operating
+savings are 5.5, 9.8 and 13.8~MEUR (normal) and 7.0, 12.7 and 18.0~MEUR (severe drought) for
+200/800, 400/1{,}600 and 800/3{,}200~MW/MWh. Their annualised costs are 25.8, 51.7 and 103.3~MEUR/yr, so
+arbitrage alone does not recover them. The value per unit is higher in drought, because the import price, not
+the cheap reservoir, sets the marginal cost in more hours. Batteries also \emph{increase} gross imports: by
+0.23--0.60~TWh in the normal year and similar amounts in the severe-drought year. They do this by storing
+low-price imports for high-price hours. ``Reducing imports'' and ``reducing cost'' are therefore different
+objectives for storage.
+
+\paragraph{Coordination.} Combining PV (+1{,}000~MW) with a 400~MW / 1{,}600~MWh battery saves 146.9~MEUR/yr
+in the normal year. That is 1.75~MEUR more than the sum of the separate savings (135.4 + 9.8). In severe
+drought the corresponding synergy is 1.82~MEUR (Table~\ref{tab:exp-E}). The synergy is positive but small,
+because an export route and the reservoir already absorb most PV surplus. The battery removes the remaining
+2.2~GWh of PV curtailment.
+
+\IfFileExists{tables/tab_exp_C.tex}{\input{tables/tab_exp_C}}{}
+\IfFileExists{tables/tab_exp_E.tex}{\input{tables/tab_exp_E}}{}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig07_imports_reliability.pdf}
+\caption{(a) Gross and net imports and (b) unserved energy as functions of drought severity $d$ (inflows scaled by
+$1-d$, existing fleet) with full (solid) and halved (dashed) interconnector availability. (c) Unserved energy
+under severe drought as demand grows. Shortage appears only when transfer availability is restricted.}
+\label{fig:imports}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig06_battery_soc.pdf}
+\caption{Battery operation in a summer week (coordinated fleet: PV 1{,}300~MW, wind 300~MW, battery 400~MW /
+1{,}600~MWh). The battery charges around midday when PV depresses the shadow price and discharges in the
+evening peak: roughly one cycle per day (385 equivalent full cycles per year).}
+\label{fig:battery}
+\end{figure}
+
+\subsection{Marginal value of flexibility (Experiment J)}
+Table~\ref{tab:marginal} and Fig.~\ref{fig:marginal} report finite-difference and dual-based marginal values
+around a base fleet with PV 300~MW, a 200~MW / 800~MWh battery and 900~MW of import capacity. In every
+non-degenerate case the dual lies within the finite-difference interval $[\Delta^+,\Delta^-]$, as LP theory
+predicts. Four results stand out:
+\begin{itemize}
+\item \textbf{PV} has an operating value of 140~kEUR/MW-yr (normal), 146 (severe drought) and 314 (compound
+shock), against an annualised cost of 80~kEUR/MW-yr.
+\item \textbf{Wind} (CF $\approx$ 0.11 from coarse reanalysis) is worth 93--99~kEUR/MW-yr against 133~kEUR/MW-yr
+in normal and drought years, and 202 under the compound shock. The wind dual at zero capacity is flagged as a
+degenerate corner, and the right finite difference is reported instead.
+\item \textbf{Battery power and energy are not substitutes.} With 800~MWh installed, an extra MW of discharge
+power is worth 12.7--15.5~kEUR/yr in normal and drought years, above its 10.1~kEUR/yr annualised cost.
+An extra MWh is worth only 2.3--4.1~kEUR/yr, against 29.8. Shorter-duration batteries are therefore closer
+to break-even than the 4-hour configuration.
+\item \textbf{Import capacity} is worth 2~kEUR/MW-yr in a normal year, 9 in severe drought and 175 under the
+compound shock. This is the largest increase of any resource, and it confirms that interconnection is the
+critical flexibility resource under compound stress. Additional reservoir \emph{volume} has zero marginal value
+in all cases: the volume bound never binds, and the energy limit comes from inflow rather than storage size.
+\end{itemize}
+
+\input{tables/tab_marginal}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig11_marginal_value.pdf}
+\caption{Marginal operating value of each flexibility resource in the normal (N), severe-drought (S) and
+compound-shock (C) cases. Bars show the finite-difference interval $[\Delta^+,\Delta^-]$, diamonds the dual
+value (crosses mark degenerate corners), and the dashed line the annualised cost of one more unit.}
+\label{fig:marginal}
+\end{figure}
+
+\input{sections/results_investment}

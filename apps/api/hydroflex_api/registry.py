@@ -13,6 +13,18 @@ RUNS = RESULTS_DIR / "runs"
 REFERENCE = RESULTS_DIR / "experiments"
 DB = RESULTS_DIR / "registry.sqlite"
 _lock = threading.Lock()
+_ref_state: dict[str, float] = {"sig": -1.0}
+
+
+def _maybe_sync() -> None:
+    """Re-index reference experiments when files in results/experiments/ change (cheap stat-based check)."""
+    if not REFERENCE.exists():
+        return
+    files = list(REFERENCE.glob("*.json"))
+    sig = float(len(files)) + sum(p.stat().st_mtime for p in files)
+    if sig != _ref_state["sig"]:
+        _ref_state["sig"] = sig
+        sync_reference()
 
 
 def _conn() -> sqlite3.Connection:
@@ -53,6 +65,7 @@ def sync_reference() -> None:
 
 
 def list_runs(limit: int = 200) -> list[dict[str, Any]]:
+    _maybe_sync()
     with _lock, _conn() as c:
         rows = c.execute("SELECT id, kind, label, created_utc, status, objective_keur, scenario, reference FROM runs "
                          "ORDER BY reference DESC, created_utc DESC LIMIT ?", (limit,)).fetchall()
@@ -61,8 +74,9 @@ def list_runs(limit: int = 200) -> list[dict[str, Any]]:
 
 
 def load(run_id: str) -> dict[str, Any] | None:
-    if not run_id.replace("-", "").replace("_", "").isalnum():
+    if not run_id.replace("-", "").replace("_", "").replace(".", "").isalnum():
         return None
+    _maybe_sync()
     with _lock, _conn() as c:
         row = c.execute("SELECT path FROM runs WHERE id = ?", (run_id,)).fetchone()
     if not row:

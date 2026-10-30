@@ -1,0 +1,112 @@
+\section{Mathematical formulation}
+\label{sec:formulation}
+
+\subsection{Sets, decisions and parameters}
+Let $\mathcal{T}=\{0,\dots,T-1\}$ be time steps of length $\Delta t$ (h) and $\mathcal{S}$ the scenarios, each with
+probability $\pi_s$. First-stage decisions $x=(x_{pv},x_{w},x_{bp},x_{be})$ are the installed PV and wind
+capacity (MW), battery power (MW) and battery energy (MWh). Each satisfies
+$x_k^0\le x_k\le x_k^0+\bar x_k$, where $x_k^0$ is the existing fleet and $\bar x_k$ the maximum addition. Import
+capacity $x_{imp}$ (MW) and maximum reservoir volume $x_{vmax}$ (hm$^3$) are modelled as fixed first-stage
+variables ($x_k=x_k^0$). This lets their reduced costs be read as marginal values (Section~\ref{sec:marginal}).
+Second-stage decisions for each $(s,t)$ are the PV, wind and run-of-river generation $g^{pv},g^{w},g^{ror}$, the
+reservoir hydro output $h$, spill $\sigma$ (hm$^3$/h), reservoir volume $V$ (hm$^3$), battery charge $c$,
+discharge $d$ and state of charge $e$, imports $m$, exports $y$ and unserved energy $u$. All are non-negative.
+
+\subsection{Objective}
+\begin{equation}
+\min\; w\sum_{k\in\{pv,w,bp,be\}} A_k\,(x_k-x_k^0)\;+\;\sum_{s}\pi_s L_s\;+\;\lambda\Big[\zeta+\frac{1}{1-\alpha}\sum_s\pi_s\phi_s\Big],
+\label{eq:obj}
+\end{equation}
+\begin{equation}
+L_s=\frac{1}{1000}\sum_{t}\Delta t\,\Big(p^m_{s,t}m_{s,t}-\rho\,p^m_{s,t}y_{s,t}+\mathrm{VOLL}\,u_{s,t}+c^h h_{s,t}+c^{\deg}d_{s,t}\Big)\quad\text{(kEUR)},
+\label{eq:opex}
+\end{equation}
+\begin{equation}
+\phi_s\ge L_s-\zeta,\qquad \phi_s\ge0,\qquad \zeta\in\R .
+\label{eq:cvar}
+\end{equation}
+Here $A_k=C_k[\,r(1+r)^{n_k}/((1+r)^{n_k}-1)+f_k\,]$ is the annualised cost per unit, combining the capital
+recovery factor with fixed O\&M as a share $f_k$ of overnight cost $C_k$. The factor $w=T\Delta t/8760$ scales
+annual costs to the modelled horizon. Existing capacity is sunk and therefore not charged. The remaining
+parameters are the import price $p^m$, the export-to-import price ratio $\rho$, hydro variable O\&M $c^h$ and a
+battery throughput degradation proxy $c^{\deg}$. At the optimum, $\zeta$ equals the value at risk $\mathrm{VaR}_\alpha$
+of the operating-cost distribution, and the bracketed term equals $\mathrm{CVaR}_\alpha$
+\cite{rockafellar2000cvar,rockafellar2002cvar}. With $\lambda=0$ the model is risk neutral; with $\lambda>0$ it
+penalises the expected cost of the worst $(1-\alpha)$ tail. Investment cost is identical across scenarios, so
+the risk term acts on operating cost.
+
+\subsection{Constraints}
+\paragraph{Energy balance.} For every $(s,t)$, whose dual is the system marginal cost:
+\begin{equation}
+g^{pv}_{s,t}+g^{w}_{s,t}+g^{ror}_{s,t}+h_{s,t}+d_{s,t}+m_{s,t}+u_{s,t}=D_{s,t}+c_{s,t}+y_{s,t}.
+\label{eq:balance}
+\end{equation}
+Curtailment is implicit: $g^{pv}_{s,t}\le f^{pv}_t x_{pv}$ and $g^{w}_{s,t}\le f^{w}_t x_{w}$, so curtailed energy is
+$f^{pv}_t x_{pv}-g^{pv}_{s,t}$ and does not appear in~\eqref{eq:balance}. This avoids double counting.
+Run-of-river generation satisfies $g^{ror}_{s,t}\le R_{s,t}$, where $R_{s,t}$ is its availability.
+
+\paragraph{Reservoir.} With the energy equivalent $\kappa=\rho_w g H\eta\cdot10^6/3.6\times10^9$ (MWh/hm$^3$),
+\begin{align}
+V_{s,t+1}&=V_{s,t}+\Delta t\,\big(I_{s,t}-h_{s,t}/\kappa-\sigma_{s,t}\big), &
+V^{\min}&\le V_{s,t}\le x_{vmax}, \label{eq:water}\\
+0&\le h_{s,t}\le P^h, & h_{s,t}/\kappa+\sigma_{s,t}&\ge r^{\min}, \label{eq:hydro}\\
+V_{s,0}&=V^0_s, & V_{s,T}&\ge V^T_s. \label{eq:terminal}
+\end{align}
+With $H=230$~m and $\eta=0.88$, $\kappa=551.6$~MWh/hm$^3$. The fixed-head assumption makes the model linear; a
+variable-head model would be bilinear in $V$ and $q$ and is left for future work. In annual runs
+$V^T_s=V^0_s$, which closes the seasonal cycle. For shorter windows, $V^0_s$ and $V^T_s$ come from a coarse
+(6-hourly) full-year run of the same scenario. We call this the \emph{nested boundary}. It prevents an isolated
+week from either exhausting or hoarding seasonal storage.
+
+\paragraph{Battery.}
+\begin{align}
+e_{s,t+1}&=e_{s,t}+\Delta t\big(\eta^c c_{s,t}-d_{s,t}/\eta^d\big), &
+\varepsilon\,x_{be}&\le e_{s,t}\le x_{be}, \label{eq:soc}\\
+0&\le c_{s,t},\,d_{s,t}\le x_{bp}, & e_{s,0}&=s_0x_{be},\;\; e_{s,T}\ge e_{s,0},\qquad x_{be}\le\delta^{\max}x_{bp}. \label{eq:batt}
+\end{align}
+Simultaneous charging and discharging is not excluded by binary variables. Because $\eta^c\eta^d<1$ and
+$c^{\deg}>0$, the LP has no incentive to do it unless it must dissipate energy, and the quantity is reported
+ex post for every run.
+
+\paragraph{Interconnection, shortage and budget.}
+\begin{equation}
+0\le m_{s,t}\le a_s\,x_{imp},\qquad 0\le y_{s,t}\le Y,\qquad 0\le u_{s,t}\le D_{s,t},\qquad
+\sum_k C_k(x_k-x_k^0)\le B .
+\label{eq:imports}
+\end{equation}
+The import limit is an aggregate net transfer capacity scaled by scenario availability $a_s$. It is not a
+power-flow model.
+
+\subsection{Representative weeks for two-stage planning}
+Hourly resolution matters for batteries, and seasonal coupling matters for the reservoir
+\cite{poncelet2016temporal,kotzur2018seasonal}. To retain both, investment and stochastic problems use eight
+hourly weeks per scenario, starting on days 7, 52, \dots, 325 (a systematic sample about every 45.6~days). Each
+(scenario, week) pair is a sub-problem with probability $\pi_s/8$. It starts at the volume $V^0_{s,w}$ of a coarse
+(6-hourly) full-year run of scenario $s$ with the existing fleet. Its end volume is not fixed. Instead it is
+valued at the marginal water value $\omega_{s,w}$ of that run, the negative dual of the water-balance
+constraint~\eqref{eq:water} at the end of the week (kEUR/hm$^3$):
+\begin{equation}
+L_{s,w} \leftarrow L_{s,w} + \omega_{s,w}\,\big(\bar V^T_{s,w} - V_{s,w,T}\big),
+\label{eq:watervalue}
+\end{equation}
+where $\bar V^T_{s,w}$ is the coarse run's end-of-week volume. This is a first-order (one-cut) future-cost
+function, in the spirit of the water values used in stochastic dual dynamic programming \cite{pereira1991sddp}.
+Water used beyond the coarse plan is charged at its opportunity cost, and water saved is credited. The battery is
+cyclic within each week. CVaR excess variables are defined per scenario, not per week:
+$\phi_s\ge\sum_{w}\tfrac{1}{8}L_{s,w}-\zeta$. The boundaries do not depend on the plan, so the stochastic
+programme, the deterministic plan's evaluation, the wait-and-see problems and all frontier evaluations share
+identical seasonal information. This guarantees a consistent comparison. Section~\ref{sec:chrono} compares
+this approximation with full-year chronological evaluation. It also compares it with an earlier hard-boundary
+variant ($V_{s,w,T}\ge\bar V^T_{s,w}$), which we found created spurious scarcity.
+
+\subsection{Marginal value of flexibility}
+\label{sec:marginal}
+For a capacity $x_k$ fixed by bounds, HiGHS returns the reduced cost $\bar d_k=c_k-(A^\top y)_k$. The marginal
+operating value is $\mathrm{MV}_k=-\partial\mathbb{E}[L]/\partial x_k=c_k-\bar d_k-(A_{\text{1st}}^\top y)_k$.
+The last term removes contributions from first-stage rows such as the budget and duration constraints. The
+optimal operating cost is a convex, piecewise-linear function of $x_k$ \cite{bertsimas1997lp}. Hence
+$\mathrm{MV}_k$ is a subgradient: it lies between the finite-difference value of adding the next increment,
+$\Delta^+_k$, and that of removing the last one, $\Delta^-_k$. Duals are therefore local and may be non-unique
+under degeneracy. At zero capacity (for example $x_{bp}=0$, or $x_{be}>0$ with $x_{bp}=0$) the corner is
+degenerate and the dual is uninformative. We therefore report finite differences alongside duals and flag
+corner cases.

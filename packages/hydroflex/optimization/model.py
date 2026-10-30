@@ -59,6 +59,7 @@ class ScenarioData:
     v0_hm3: float | None = None          # per-scenario boundary (nested runs); overrides ModelInput
     v_terminal_hm3: float | None = None
     group: str | None = None             # members of a group (e.g. representative weeks) share one CVaR loss
+    terminal_water_value: float | None = None  # kEUR/hm3: replaces the hard terminal constraint by a water value
 
     @property
     def group_key(self) -> str:
@@ -237,7 +238,12 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
             rows["minrel"] = r
         vt_target = s.v_terminal_hm3 if s.v_terminal_hm3 is not None else (
             mi.v_terminal_hm3 if mi.v_terminal_hm3 is not None else v0)
-        if p.res_terminal == "geq":
+        if s.terminal_water_value is not None:
+            # soft boundary: end-of-window water valued at the coarse annual run's shadow price,
+            # objective += pi * wv * (V_target - V_T)   (draining costs wv, saving water earns wv)
+            lp.add_cost(v["V"][T], -pi * s.terminal_water_value)
+            lp.c0 += pi * s.terminal_water_value * vt_target
+        elif p.res_terminal == "geq":
             r = lp.rows_block(pre + "vterm", 1, vt_target, INF)
             lp.coef(r, v["V"][T], 1.0)
             rows["vterm"] = r
@@ -289,7 +295,9 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
         for g, members in groups.items():
             pig = sum(mi.scenarios[i].probability for i in members)
             phi = lp.var(f"cvar_phi_{g}", 1, cost=mi.risk.weight * pig / (1 - mi.risk.alpha))[0]
-            r = lp.rows_block(f"cvar_{g}", 1, 0.0, INF)
+            const = sum(mi.scenarios[i].probability / pig * mi.scenarios[i].terminal_water_value * sc_ix[i]["vt"]
+                        for i in members if mi.scenarios[i].terminal_water_value is not None)
+            r = lp.rows_block(f"cvar_{g}", 1, const, INF)
             lp.coef(r, phi, 1.0)
             lp.coef(r, ix["zeta"], 1.0)
             for i in members:
@@ -300,6 +308,8 @@ def build(mi: ModelInput) -> tuple[LP, dict[str, Any]]:
                 lp.coef(r, v["ens"], -wgt * p.voll_eur_mwh)
                 lp.coef(r, v["hydro"], -wgt * p.hydro_vom_eur_mwh)
                 lp.coef(r, v["dis"], -wgt * p.battery_degradation_eur_mwh)
+                if sd.terminal_water_value is not None:
+                    lp.coef(r, v["V"][T], sd.probability / pig * sd.terminal_water_value)
     return lp, ix
 
 
@@ -371,9 +381,11 @@ def _scenario_metrics(mi: ModelInput, s: ScenarioData, x: np.ndarray, v: dict, s
         "unserved_penalty_keur": E(p.voll_eur_mwh * g["ens"]) / 1000,
         "hydro_vom_keur": E(p.hydro_vom_eur_mwh * g["hydro"]) / 1000,
         "battery_degradation_keur": E(p.battery_degradation_eur_mwh * g["dis"]) / 1000,
+        "terminal_water_keur": (s.terminal_water_value * (s.v_terminal_hm3 - g["V"][-1])
+                                if s.terminal_water_value is not None and s.v_terminal_hm3 is not None else 0.0),
     }
     opex = (opex_terms["import_cost_keur"] - opex_terms["export_revenue_keur"] + opex_terms["unserved_penalty_keur"]
-            + opex_terms["hydro_vom_keur"] + opex_terms["battery_degradation_keur"])
+            + opex_terms["hydro_vom_keur"] + opex_terms["battery_degradation_keur"] + opex_terms["terminal_water_keur"])
     bal_dual = sol.row_dual[rows["balance"]]
     weight = max(s.probability, 1e-12) * dt / 1000.0
     price = bal_dual / weight  # EUR/MWh
@@ -426,6 +438,7 @@ def _scenario_metrics(mi: ModelInput, s: ScenarioData, x: np.ndarray, v: dict, s
         "pv_curtailed": pv_av - g["pv"], "wind_curtailed": w_av - g["wind"],
         "reservoir_hm3": g["V"][1:], "inflow_hm3_h": s.inflow, "release_hm3_h": g["hydro"] / p.mwh_per_hm3,
         "spill_hm3_h": g["spill"], "soc_mwh": g["soc"][1:], "price_eur_mwh": price,
+        "water_value_keur_per_hm3": -sol.row_dual[rows["water"]] / max(s.probability, 1e-12),
         "import_price": s.import_price,
     }
     return metrics, ts

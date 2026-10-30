@@ -1,0 +1,63 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{url}
+\graphicspath{{figures/}}
+\captionsetup{font=small,labelfont=bf}
+\setlist{itemsep=2pt,topsep=4pt}
+\newcommand{\R}{\mathbb{R}}
+
+\title{\textbf{Climate-Aware Stochastic Optimization of Hydropower, Renewable Generation, and Battery Storage for Electricity-System Resilience in Albania}}
+\author{Ajsel Budlla\\[2pt]
+\small Whitman College, Walla Walla, Washington, USA\\
+\small \textit{Research prototype — preprint, not peer reviewed}}
+\date{\small Manuscript generated from the HYDROFLEX AI experiment pipeline}
+
+\begin{document}
+\maketitle
+
+\input{sections/abstract}
+\input{sections/introduction}
+\input{sections/literature}
+\input{sections/data}
+\input{sections/formulation}
+\input{sections/implementation}
+\input{sections/design}
+\input{sections/results}
+\input{sections/sensitivity}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\section*{Data and code availability}
+All code, input-data provenance records, experiment outputs and the scripts that generate every figure and
+table in this manuscript are contained in the HYDROFLEX AI repository. Running
+\texttt{python -m hydroflex.experiments.run_all} regenerates the experiment files, tables and figures.
+Demand and price series are synthetic and are labelled as such in every output.
+
+\section*{Use of software and AI assistance}
+Model code, the experiment pipeline and draft text were developed with the assistance of an AI coding
+assistant (Claude, Anthropic) operating under the author's direction. All reported numbers are produced by
+executed code in the repository.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

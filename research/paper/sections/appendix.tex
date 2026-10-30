@@ -1,0 +1,60 @@
+\section{Symbols}
+\label{app:symbols}
+\begin{table}[htbp]\centering\footnotesize
+\caption{Symbols and units.}
+\begin{tabular}{llp{9cm}}
+\toprule
+Symbol & Unit & Meaning \\
+\midrule
+$t,\ \Delta t,\ T$ & h & time step index, step length, number of steps \\
+$s,\ \pi_s$ & -- & scenario and probability \\
+$x_{pv},x_w$ & MW & installed PV and wind capacity (first stage) \\
+$x_{bp},x_{be}$ & MW, MWh & battery power and energy capacity (first stage) \\
+$x_{imp},\ x_{vmax}$ & MW, hm$^3$ & import capacity, maximum reservoir volume (fixed; marginal-value analysis) \\
+$x^0_k,\ \bar x_k$ & & existing capacity, maximum addition \\
+$A_k,\ C_k$ & kEUR/unit(-yr) & annualised and overnight cost \\
+$w$ & -- & $T\Delta t/8760$ horizon weight of annual costs \\
+$g^{pv},g^w,g^{ror}$ & MW & PV, wind, run-of-river generation \\
+$f^{pv}_t,f^w_t$ & p.u. & capacity factors \\
+$R_{s,t}$ & MW & run-of-river availability \\
+$h$ & MW & reservoir hydro output \\
+$V,\ I,\ \sigma$ & hm$^3$, hm$^3$/h & reservoir volume, inflow, spill \\
+$\kappa$ & MWh/hm$^3$ & energy equivalent of water, $\rho_w g H\eta\cdot10^6/3.6\times10^9$ \\
+$P^h,\ r^{\min}$ & MW, hm$^3$/h & turbine capacity, minimum release \\
+$c,\ d,\ e$ & MW, MW, MWh & battery charge, discharge, state of charge \\
+$\eta^c,\eta^d,\varepsilon,s_0,\delta^{\max}$ & -- & efficiencies, minimum SOC fraction, initial SOC fraction, maximum duration (h) \\
+$m,\ y,\ a_s,\ Y$ & MW & imports, exports, import availability factor, export limit \\
+$p^m,\ \rho$ & EUR/MWh, -- & import price, export/import price ratio \\
+$u,\ \mathrm{VOLL}$ & MW, EUR/MWh & unserved energy, value of lost load \\
+$L_s$ & kEUR & scenario operating cost \\
+$\alpha,\ \lambda,\ \zeta,\ \phi_s$ & -- & CVaR level, risk weight, VaR variable, tail excess \\
+$B$ & MEUR & overnight capital budget \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Additional results}
+\label{app:results}
+\IfFileExists{tables/tab_exp_D.tex}{\input{tables/tab_exp_D}}{}
+\IfFileExists{tables/tab_exp_G.tex}{\input{tables/tab_exp_G}}{}
+\IfFileExists{tables/tab_risk_sweep.tex}{\input{tables/tab_risk_sweep}}{}
+
+\section{Solver diagnostics and verification}
+\label{app:solver}
+\IfFileExists{tables/tab_solver.tex}{\input{tables/tab_solver}}{}
+\IfFileExists{tables/tab_validation.tex}{\input{tables/tab_validation}}{}
+
+\section{Data dictionary}
+\label{app:data}
+\IfFileExists{tables/tab_data_dictionary.tex}{\input{tables/tab_data_dictionary}}{}
+
+\section{Reproducibility instructions}
+\label{app:repro}
+\begin{enumerate}
+\item \texttt{python -m venv .venv} and \texttt{pip install -e ".[dev]"} (Python $\ge$ 3.11).
+\item Optional data refresh: \texttt{python -m hydroflex.data.fetch} then \texttt{python -m hydroflex.data.profiles}.
+\item \texttt{python -m hydroflex.experiments.run\_all} (add \texttt{--force} to recompute cached experiments).
+\item \texttt{pytest} runs the verification suite.
+\item Compile this manuscript with \texttt{latexmk -pdf main.tex} (or \texttt{tectonic main.tex}) in \texttt{research/paper}.
+\end{enumerate}
+Software versions, seeds and stage timings are recorded in \texttt{results/experiments/manifest.json}.

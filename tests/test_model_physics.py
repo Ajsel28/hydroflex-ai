@@ -234,3 +234,47 @@ def test_dual_marginal_value_is_subgradient(battery_params, key, delta):
     left = -(o0 - dn.scenario_results[0]["opex_keur"]) / delta   # value of the last unit
     # convex value function: right-derivative value <= dual value <= left-derivative value
     assert right - 1e-6 <= val <= left + 1e-6
+
+
+# ---------------- grouped scenarios (representative weeks) ----------------------------------
+def _grouped():
+    out = []
+    for g, prob, inflow, price in (("wet", 0.5, 1.0, 100.0), ("dry", 0.5, 0.1, 200.0)):
+        for w in range(2):
+            s = toy_scenario(key=f"{g}@w{w}", prob=prob / 2, inflow=inflow, price=price, seed=w)
+            s.group = g
+            out.append(s)
+    return out
+
+
+def test_grouped_cvar_reconciliation_and_aggregation():
+    inv = InvestmentOptions(enabled=True, budget_meur=200)
+    lam, alpha = 2.0, 0.6
+    r = solve(toy_input(scen=_grouped(), invest=inv, risk=RiskOptions(alpha=alpha, weight=lam)))
+    assert r.optimal and r.solver["method"] == "simplex"
+    assert [s["key"] for s in r.scenario_results] == ["wet", "dry"]
+    assert abs(sum(s["probability"] for s in r.scenario_results) - 1) < 1e-12
+    # objective = capex + expected opex over members + lambda * CVaR over group losses
+    lp_obj = r.objective_keur
+    capex = r.expected["capex_annualised_keur"] * (48 / 8760)
+    exp_opex = r.risk["expected_loss_keur"]
+    assert abs(lp_obj - (capex + exp_opex + lam * r.risk["cvar_keur"])) < 1e-5 * max(1, abs(lp_obj))
+    # aggregated extensive metrics are annualised means of members
+    assert r.scenario_results[1]["n_members"] == 2
+
+
+def test_terminal_water_value_reconciliation():
+    s = toy_scenario(T=48, inflow=0.3, demand=1200)
+    s.v_terminal_hm3 = 1500.0
+    s.terminal_water_value = 60.0  # kEUR per hm3
+    r = solve(toy_input(scen=[s]))
+    m = r.scenario_results[0]
+    assert r.optimal
+    v_end = r.timeseries["toy"]["reservoir_hm3"][-1]
+    assert abs(m["terminal_water_keur"] - 60.0 * (1500.0 - v_end)) < 1e-6
+    assert abs(r.objective_keur - m["opex_keur"]) < 1e-6 * max(1, abs(r.objective_keur))
+    # a higher water value never leaves less water at the end of the window
+    s2 = toy_scenario(T=48, inflow=0.3, demand=1200)
+    s2.v_terminal_hm3, s2.terminal_water_value = 1500.0, 600.0
+    r2 = solve(toy_input(scen=[s2]))
+    assert r2.timeseries["toy"]["reservoir_hm3"][-1] >= v_end - 1e-6

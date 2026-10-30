@@ -1,0 +1,39 @@
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Network representation.} The model has a single node. Internal transmission constraints, losses and
+stability limits are absent. The four interconnections (Montenegro, Kosovo, North Macedonia, Greece) are
+collapsed into one import and one export limit, so this is not a power-flow model. Regional correlation of
+droughts and prices is represented only through the scenario availability factor $a_s$.
+
+\paragraph{Market data.} Demand and prices are synthetic. Export revenue is a fixed 85\% of the import price.
+Many conclusions, especially the value of PV, which in this model can always be exported up to 900~MW, depend
+on this assumption. With observed ENTSO-E load and regional day-ahead prices the analysis could be repeated
+without code changes.
+
+\paragraph{Hydrology.} Inflows are reconstructed from reanalysis precipitation with an uncalibrated conceptual
+model and scaled to an assumed mean energy. They are not gauged inflows. Drought is a uniform scaling of one
+reference year. Real droughts also change the seasonal timing of inflows, and this is not captured.
+
+\paragraph{Reservoir simplification.} The three-stage Drin cascade is one equivalent reservoir with a fixed
+aggregate head. Head-dependent efficiency, travel times, individual reservoir limits and flood-control rules
+are omitted. The other hydro plants are treated as run-of-river without storage.
+
+\paragraph{Operational detail.} There is no unit commitment, no ramping, no reserve or ancillary-service
+requirement and no thermal fleet. Batteries are therefore valued only for energy arbitrage and shortage
+avoidance, which probably understates their real value. Simultaneous charging and discharging is excluded by
+economics, not by binaries, and is monitored.
+
+\paragraph{Time structure.} Investment and stochastic studies use eight representative weeks with
+fleet-independent seasonal boundaries. Water allocation across seasons therefore does not adapt to new
+investment. We quantify the error against full-year chronology (Section~\ref{sec:chrono}), but the planning
+results inherit it.
+
+\paragraph{Costs and uncertainty.} Technology costs are global IRENA averages with an assumed regional
+multiplier. VOLL, the discount rate, lifetimes and the scenario probabilities are assumptions. Five scenarios
+cannot describe the full climate distribution, and the 15\% stress probability is a judgement, not an estimate.
+
+\paragraph{Validation.} The model has been \emph{verified}: against an independent PyPSA formulation and through
+automated conservation and behaviour tests. It has \textbf{not been validated} against observed operations of
+the Albanian system. Scenario comparisons are model experiments, not empirical evidence. The results are model
+implications under stated assumptions and should not be read as policy recommendations.

@@ -1,0 +1,48 @@
+\section{Introduction}
+\label{sec:intro}
+
+Albania is one of the most hydropower-dependent electricity systems in Europe. Hydropower made up about
+95\% of installed generating capacity at the end of 2018 (2{,}096~MW), and the River Drin cascade, made up of
+Fierza (500~MW), Koman (600~MW) and Vau i Dejës (250~MW), is the backbone of domestic supply
+\cite{irena2021rra,kesh2026drin}. This structure makes annual electricity supply a function of rainfall and
+snowmelt. Reported net imports are closely correlated with annual precipitation \cite{irena2021rra}, and
+IRENA's assessment projects that average output from large and small hydropower plants could be roughly 15\% and
+20\% lower by 2050 than in 2010 \cite{irena2021rra}. Climate variability is therefore not a remote planning
+consideration for Albania. It is the dominant operational risk.
+
+Three developments make the question of \emph{flexibility} timely. First, utility-scale solar photovoltaics
+(PV) and batteries have become much cheaper; IRENA reports global weighted-average installed costs of
+USD~691/kW for PV, USD~1{,}041/kW for onshore wind and USD~192/kWh for battery storage projects in 2024
+\cite{irena2025costs}. Second, the reservoir fleet is itself a large energy store whose seasonal value
+depends on how it is coordinated with variable renewables and imports \cite{labadie2004reservoir}. Third,
+regional interconnections let a hydro system import in dry periods and export in wet ones. That exposes
+the system to regional prices and to the availability of transfer capacity.
+
+This paper asks: \emph{how should a hydropower-dependent electricity system coordinate reservoir operation,
+renewable generation, battery storage and electricity imports under uncertain rainfall, fluctuating demand
+and financial constraints?} We address eight supporting questions. They cover the reliability effect of
+drought, the import-reduction potential of solar, wind and batteries, how storage value changes with drought
+severity, budget-constrained investment, the performance of plans optimised for average conditions under
+shocks, the value of stochastic and risk-averse planning, the marginal value of each flexibility resource, and
+sensitivity to prices, demand, costs and inflows.
+
+\paragraph{Contributions.} The work is an independent research prototype with four contributions:
+\begin{enumerate}
+\item An open, fully reproducible linear-programming model of the Albanian system. It couples an hourly
+energy balance with a physically consistent reservoir water balance (in hm$^3$, with an explicit energy
+equivalent), independent battery power and energy sizing, an aggregate interconnector and an unserved-energy
+penalty. It is solved with the open-source HiGHS solver and verified against an independent PyPSA formulation.
+\item A two-stage stochastic investment programme with a Rockafellar--Uryasev CVaR term. Capacities are
+shared first-stage decisions and dispatch is scenario specific at hourly resolution on representative weeks.
+Seasonal reservoir coupling is retained through nested annual boundary conditions.
+\item A transparent climate-scenario construction that ties drought severities to a reconstructed
+2001--2023 inflow index derived from NASA POWER precipitation. Every series is labelled as weather-derived,
+reconstructed or synthetic.
+\item A systematic marginal-value analysis that compares dual-based and finite-difference values of
+battery energy, battery power, PV, wind, import capacity and reservoir volume, and states explicitly when
+duals can and cannot be interpreted economically.
+\end{enumerate}
+The model is embedded in an interactive decision-support application whose numbers come exclusively from
+executed optimisation runs. We stress at the outset what the work is not. It is not an operational model,
+it has not been validated against observed Albanian grid operations, and its demand and price inputs are
+synthetic (Section~\ref{sec:limitations}).

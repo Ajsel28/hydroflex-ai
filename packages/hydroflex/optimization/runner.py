@@ -103,19 +103,26 @@ REP_WEEK_START_DAYS_4 = (14, 105, 196, 287)                  # 4-week variant fo
 
 
 def make_repweek_input(cfg: RunConfig, week_start_days: tuple[int, ...] = REP_WEEK_START_DAYS,
-                       boundary_capacity: dict[str, float] | None = None, coarse_h: int = 6) -> ModelInput:
+                       boundary_capacity: dict[str, float] | None = None, coarse_h: int = 6,
+                       boundary_mode: str = "water_value") -> ModelInput:
     """Each (scenario s, week w) is a member of group s with probability pi_s / n_weeks.
 
-    Hourly chronology inside every week (battery cycling is resolved); reservoir volume at the start and end
-    of each week comes from a coarse full-year chronological run of the same scenario (seasonal coupling).
+    Hourly chronology inside every week (battery cycling is resolved). The week starts at the reservoir volume of a
+    coarse full-year chronological run of the same scenario. At the end of the week:
+      boundary_mode="water_value" (default): end volume valued at the coarse run's marginal water value (dual of
+          the water balance) - a first-order future-cost function, no hard constraint;
+      boundary_mode="hard": V_T >= coarse-run volume (rigid; shown to create spurious scarcity).
     ``boundary_capacity`` sets the fleet used in that coarse run (pass the investment result for a second pass).
     """
     frames, _, _ = scenario_frames(cfg)
     members = []
-    bcfg = RunConfig(scenarios=cfg.scenarios, params=cfg.params, costs=cfg.costs, fixed_capacity=boundary_capacity
-                     or cfg.fixed_capacity, year=cfg.year)
+    # Boundary fleet: by default the EXISTING fleet, independent of the plan being optimised or evaluated, so that
+    # optimisation, deterministic-plan evaluation, wait-and-see runs and frontier evaluations all share identical
+    # seasonal water allocations (a consistent approximation; see METHODOLOGY.md §4).
+    bcfg = RunConfig(scenarios=cfg.scenarios, params=cfg.params, costs=cfg.costs, fixed_capacity=boundary_capacity,
+                     year=cfg.year)
     for spec, df in zip(cfg.scenarios, frames, strict=True):
-        V = _coarse_trajectory(bcfg, spec, df, coarse_h)
+        V, WV = _coarse_trajectory(bcfg, spec, df, coarse_h)
         for wi, d0 in enumerate(week_start_days):
             h0 = d0 * 24
             w = _window(df, h0, 168, 1)
@@ -123,7 +130,10 @@ def make_repweek_input(cfg: RunConfig, week_start_days: tuple[int, ...] = REP_WE
                                          cfg.params)
             sd.group = spec.key
             sd.v0_hm3 = float(V[h0 // coarse_h])
-            sd.v_terminal_hm3 = float(V[min((h0 + 168) // coarse_h, len(V) - 1)])
+            i1 = min((h0 + 168) // coarse_h, len(V) - 1)
+            sd.v_terminal_hm3 = float(V[i1])
+            if boundary_mode == "water_value":
+                sd.terminal_water_value = float(WV[i1 - 1])
             members.append(sd)
     ts = _window(frames[0], week_start_days[0] * 24, 168, 1).index
     return ModelInput(params=cfg.params, costs=cfg.costs, invest=cfg.invest, scenarios=members, dt=1.0, timestamps=ts,
@@ -138,17 +148,26 @@ def _coarse_trajectory(cfg: RunConfig, spec: ScenarioSpec, df: pd.DataFrame, coa
     res = solve(mi)
     if not res.optimal:
         raise RuntimeError(f"coarse boundary run infeasible for {spec.key}: {res.status}")
-    return np.concatenate([[res.scenario_results[0]["res_v_start_hm3"]], res.timeseries[spec.key]["reservoir_hm3"]])
+    ts = res.timeseries[spec.key]
+    return (np.concatenate([[res.scenario_results[0]["res_v_start_hm3"]], ts["reservoir_hm3"]]),
+            np.asarray(ts["water_value_keur_per_hm3"], dtype=float))
 
 
-def run_repweeks(cfg: RunConfig, passes: int = 2, keep_timeseries: bool = False,
-                 weeks: tuple[int, ...] = REP_WEEK_START_DAYS) -> tuple[ModelResult, ModelInput, dict]:
-    """Solve the representative-week programme; pass 2 recomputes reservoir boundaries with the pass-1 fleet."""
-    info: dict = {"passes": [], "week_start_days": list(weeks)}
+def run_repweeks(cfg: RunConfig, passes: int = 1, keep_timeseries: bool = False,
+                 weeks: tuple[int, ...] = REP_WEEK_START_DAYS,
+                 boundary_mode: str = "water_value") -> tuple[ModelResult, ModelInput, dict]:
+    """Solve the representative-week programme.
+
+    passes=1 (default): fleet-independent boundaries from the existing fleet — consistent across all runs.
+    passes>1: experimental fixed-point iteration that recomputes boundaries with the previous pass's fleet. It is NOT
+    guaranteed to converge and makes runs with different fleets use different boundaries; it is kept only to
+    document the sensitivity of results to the boundary policy.
+    """
+    info: dict = {"passes": [], "week_start_days": list(weeks), "boundary_mode": boundary_mode}
     cap = None
     res = mi = None
     for k in range(passes):
-        mi = make_repweek_input(cfg, week_start_days=weeks, boundary_capacity=cap)
+        mi = make_repweek_input(cfg, week_start_days=weeks, boundary_capacity=cap, boundary_mode=boundary_mode)
         res = solve(mi, keep_timeseries=keep_timeseries)
         info["passes"].append({"pass": k + 1, "status": res.status, "objective_keur": res.objective_keur,
                                "additions": res.additions})

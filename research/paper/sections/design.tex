@@ -1,0 +1,31 @@
+\section{Experimental design}
+\label{sec:design}
+
+Table~\ref{tab:experiments} summarises the ten experiments. Experiments A--G and J are run as full-year
+(8{,}760~h) hourly dispatch with fixed fleets. Experiments H and I are investment problems solved with the
+representative-week formulation. Every strategy in the investment comparison is \emph{evaluated} with the same
+representative-week model on the five-scenario set, so that strategies are compared on equal terms. A
+resolution study (1, 2, 3 and 6~h) quantifies the bias that coarse time steps introduce into storage value.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Experiments and hypotheses. All hypotheses are tested numerically in the pipeline; whether each is
+supported is reported in Section~\ref{sec:results}.}
+\label{tab:experiments}
+\begin{tabular}{p{0.6cm}p{4.2cm}p{9.6cm}}
+\toprule
+ID & Experiment & Hypothesis \\
+\midrule
+A & Reference operation & With reference inflows the existing fleet serves demand without shortage, using the interconnector in both directions. \\
+B & Drought (moderate, severe) & Drought is absorbed mainly through higher net imports and cost; shortages do not occur while the interconnector is fully available. \\
+C & Solar without batteries & Import reduction per added MW of PV declines as PV grows (diminishing returns). \\
+D & Batteries without new renewables & Battery operating value is modest relative to annualised cost where reservoir hydro already provides flexibility. \\
+E & Coordinated portfolio & PV and storage are complements: combined operating savings exceed the sum of the separate additions. \\
+F & Import price shock / derating & Price shocks raise cost but not shortage; shortages require a loss of import availability. \\
+G & Demand growth & With halved import availability, unserved energy rises non-linearly with demand growth. \\
+H & Budget-constrained investment & Under a binding budget the optimiser favours the technology with the highest operating value per euro. \\
+I & Deterministic vs stochastic & A stochastic, risk-aware plan reduces expected cost and tail risk relative to planning for a normal year. \\
+J & Marginal value of flexibility & Dual values lie within the finite-difference interval wherever the LP is non-degenerate. \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -174,7 +174,7 @@ def run_stochastic(req: dict, run_id: str | None = None, scenarios: list[Scenari
     def _solve(cfg: RunConfig, keep: bool = False) -> tuple[ModelResult, ModelInput, dict]:
         if method == "representative_weeks":
             weeks = REP_WEEK_START_DAYS_4 if int(req.get("n_weeks", 8)) == 4 else REP_WEEK_START_DAYS
-            return run_repweeks(cfg, keep_timeseries=keep, weeks=weeks, passes=int(req.get("boundary_passes", 2)))
+            return run_repweeks(cfg, keep_timeseries=keep, weeks=weeks, passes=int(req.get("boundary_passes", 1)))
         r, m, _ = run(cfg, keep_timeseries=keep)
         return r, m, {}
 
@@ -199,24 +199,34 @@ def run_stochastic(req: dict, run_id: str | None = None, scenarios: list[Scenari
                            r1.additions if r1.optimal else {}))
             ws_obj = sum(pr * o for pr, o, _ in ws)
             lam = risk.weight
+            w = mi.horizon_weight
             rp_e = res.objective_keur - (lam * res.risk["cvar_keur"] if lam > 0 else 0.0)
             eev_e = (ev.objective_keur - (lam * ev.risk["cvar_keur"] if lam > 0 else 0.0)) if ev.optimal else float("nan")
-            w = mi.horizon_weight
+            vss = (ev.objective_keur - res.objective_keur) if ev.optimal else float("nan")  # risk-adjusted objective
             extra["deterministic_comparison"] = {
                 "deterministic_plan_capacities": det.capacities, "deterministic_plan_additions": det.additions,
                 "deterministic_objective_normal_only_keur": det.objective_keur,
                 "eev_objective_keur": ev.objective_keur if ev.optimal else None,
-                "eev_expected_cost_keur": eev_e, "rp_expected_cost_keur": rp_e, "vss_keur": eev_e - rp_e,
-                "vss_keur_annualised": (eev_e - rp_e) / w,
+                "rp_objective_keur": res.objective_keur,
+                "eev_expected_cost_keur": eev_e, "rp_expected_cost_keur": rp_e,
+                "eev_expected_cost_keur_annualised": eev_e / w, "rp_expected_cost_keur_annualised": rp_e / w,
+                "vss_keur": vss, "vss_keur_annualised": vss / w,
+                "expected_cost_premium_keur_annualised": (rp_e - eev_e) / w,
                 "eev_cvar_keur": ev.risk.get("cvar_keur") if ev.optimal else None,
                 "rp_cvar_keur": res.risk.get("cvar_keur"),
                 "eev_cvar_keur_annualised": ev.risk.get("cvar_keur_annualised") if ev.optimal else None,
                 "rp_cvar_keur_annualised": res.risk.get("cvar_keur_annualised"),
+                "cvar_reduction_keur_annualised": ((ev.risk.get("cvar_keur_annualised") or 0)
+                                                   - (res.risk.get("cvar_keur_annualised") or 0)) if ev.optimal else None,
                 "eev_scenarios": ev.scenario_results if ev.optimal else [],
-                "wait_and_see_expected_keur": ws_obj, "evpi_keur": rp_e - ws_obj, "evpi_keur_annualised": (rp_e - ws_obj) / w,
+                "wait_and_see_expected_keur": ws_obj,
+                "evpi_keur": (rp_e - ws_obj) if lam == 0 else None,
+                "evpi_keur_annualised": ((rp_e - ws_obj) / w) if lam == 0 else None,
                 "wait_and_see_additions": {s.key: wv[2] for s, wv in zip(scen, ws, strict=True)},
-                "notes": "VSS = EEV − RP and EVPI = RP − WS on expected cost (risk term excluded). The deterministic "
-                         "plan is optimised for the normal scenario only and then evaluated on all scenarios.",
+                "notes": "VSS = EEV − RP on the full (risk-adjusted) objective E[cost] + λ·CVaR, hence VSS ≥ 0. "
+                         "expected_cost_premium = RP − EEV on expected cost alone (the price of risk aversion). "
+                         "EVPI = RP − WS is reported only for λ = 0. The deterministic plan is optimised for the normal "
+                         "scenario and evaluated on all scenarios with the same reservoir boundaries.",
             }
     req_rec = dict(req)
     req_rec["scenario_set"] = [s.model_dump() for s in scen]

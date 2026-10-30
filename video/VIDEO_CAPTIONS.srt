@@ -1,0 +1,47 @@
+1
+00:00:00,000 --> 00:00:07,500
+Almost all of Albania's electricity comes from hydropower.
+
+2
+00:00:07,500 --> 00:00:15,000
+When rainfall fails, the grid has to import — and climate projections point to less water.
+
+3
+00:00:15,000 --> 00:00:22,500
+HydroFlex AI is an open-source digital twin that optimises reservoirs, solar, wind, batteries and imports together.
+
+4
+00:00:22,500 --> 00:00:30,000
+It uses open data and the HiGHS solver. Demand and price data are synthetic, and labelled that way.
+
+5
+00:00:30,000 --> 00:00:42,000
+A real optimisation of a winter week: the solver returns an optimal hourly schedule in under a second.
+
+6
+00:00:42,000 --> 00:00:55,000
+In a normal week, imports are only about two gigawatt-hours.
+
+7
+00:00:55,000 --> 00:01:05,000
+Now inflows are cut by forty percent. Every megawatt-hour is still served,
+
+8
+00:01:05,000 --> 00:01:15,000
+but imports jump to about twenty-nine gigawatt-hours and the week costs about five million euros more.
+
+9
+00:01:15,000 --> 00:01:25,000
+A 300-megawatt battery lowers that week's cost by about a third of a million euros,
+
+10
+00:01:25,000 --> 00:01:35,000
+while imports rise: storage shifts cheap imported energy to expensive hours.
+
+11
+00:01:35,000 --> 00:01:50,000
+Across five inflow and market scenarios, a risk-aware stochastic plan chooses a different mix than an average-year plan.
+
+12
+00:01:50,000 --> 00:02:00,000
+This is a research prototype. Next: observed data, network constraints and multi-stage hydro scheduling.

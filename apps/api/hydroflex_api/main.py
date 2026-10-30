@@ -34,7 +34,7 @@ from hydroflex_api import registry
 from hydroflex_api.schemas import InvestmentRequest, SimulateRequest, StochasticRequest
 
 MAX_STEPS = {"simulate": 8760, "investment": 2920, "stochastic_total": 7300}
-RATE_LIMIT = int(os.getenv("HYDROFLEX_RATE_LIMIT", "12"))
+RATE_LIMIT = int(os.getenv("HYDROFLEX_RATE_LIMIT", "60"))  # deployment config sets 12
 RATE_WINDOW_S = 600
 ORIGINS = [o.strip() for o in os.getenv("HYDROFLEX_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,"
                                          "http://localhost:4173,http://127.0.0.1:4173").split(",") if o.strip()]

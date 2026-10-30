@@ -251,7 +251,7 @@ def _evaluate_plan(adds: dict[str, float], scen: list[ScenarioSpec]) -> dict[str
     fixed = {"pv": p.pv_existing_mw + adds.get("pv", 0), "wind": p.wind_existing_mw + adds.get("wind", 0),
              "bp": adds.get("bp", 0), "be": adds.get("be", 0)}
     inv = InvestmentOptions(enabled=True, budget_meur=None)
-    cfg = RunConfig(scenarios=scen, invest=inv, fixed_capacity=fixed)
+    cfg = RunConfig(scenarios=scen, invest=inv, fixed_capacity=fixed, risk=RiskOptions(alpha=0.9, weight=0.0))
     r, mi, info = run_repweeks(cfg)
     if not r.optimal:
         return {"status": r.status}
@@ -299,7 +299,7 @@ def exp_H_I() -> None:
                                            "rows": rows, "alpha": 0.9, "budget_meur": BUDGET})
     if not cached("ref-I-stochastic"):
         d = run_stochastic({"budget_meur": BUDGET, "risk_alpha": 0.9, "risk_lambda": 1.0, "compare_deterministic": True,
-                            "n_weeks": 8, "boundary_passes": 2,
+                            "n_weeks": 8, "boundary_passes": 1,
                             "label": "Reference: two-stage stochastic plan, CVaR(0.9) weight 1.0, budget 500 MEUR"},
                            run_id="ref-I-stochastic")
         save("ref-I-stochastic", d)
@@ -347,20 +347,119 @@ def exp_H_I() -> None:
                     "capex_overnight_meur": ev["capex_overnight_meur"], "capex_annualised_keur": ev["capex_annualised_keur"],
                     "by_scenario": ev["by_scenario"], "expected": e,
                     "cvar_opex_keur_annualised": ev["risk"].get("cvar_keur_annualised")})
-    pts = [(s["expected"]["total_cost_keur_annualised"], s["expected"]["imports_mwh"]) for s in out]
-    mask = pareto_mask(pts)
-    for s, m in zip(out, mask, strict=True):
-        s["pareto"] = bool(m)
+    for s in out:
+        s["cvar_total_keur_annualised"] = (s["cvar_opex_keur_annualised"] or 0.0) + s["capex_annualised_keur"]
+    defs = {
+        "pareto": lambda s: (s["expected"]["total_cost_keur_annualised"], s["expected"]["imports_mwh"]),
+        "pareto_cost_cvar": lambda s: (s["expected"]["total_cost_keur_annualised"], s["cvar_total_keur_annualised"]),
+        "pareto_capex_imports": lambda s: (s["capex_overnight_meur"], s["expected"]["imports_mwh"]),
+        "pareto_cost_ens": lambda s: (s["expected"]["total_cost_keur_annualised"], s["expected"]["ens_mwh"]),
+    }
+    for name, fn in defs.items():
+        mask = pareto_mask([fn(s) for s in out])
+        for s, m in zip(out, mask, strict=True):
+            s[name] = bool(m)
     keys = [s.key for s in scen]
     costs = np.array([[s["by_scenario"][k]["total_cost_keur_annualised"] for k in keys] for s in out])
     save("ref-H-frontier", {"kind": "frontier", "evaluation_scenarios": keys,
                             "scenario_probabilities": {s.key: s.probability for s in scen},
                             "strategies": out, "pareto_front": [s["id"] for s in out if s["pareto"]],
+                            "pareto_fronts": {k: [s["id"] for s in out if s[k]] for k in defs},
                             "frontier_axes": {"x": "expected total annualised cost (kEUR/yr)",
                                               "y": "expected imports (MWh/yr)"},
+                            "pareto_definitions": {
+                                "pareto": "min expected total cost, min expected imports",
+                                "pareto_cost_cvar": "min expected total cost, min CVaR(0.9) of total cost",
+                                "pareto_capex_imports": "min overnight capex, min expected imports",
+                                "pareto_cost_ens": "min expected total cost, min expected unserved energy"},
                             "regret_keur": regret_matrix(costs).tolist(),
                             "method": "Every strategy is evaluated with the same representative-week hourly model "
                                       "(8 weeks × 5 scenarios, nested seasonal reservoir boundaries). Metrics annualised."})
+
+
+def exp_I2() -> None:
+    """When does stochastic planning matter? Same comparison with restricted export capacity (PV surplus must be
+    stored or curtailed) and a larger budget, so that storage competes with PV."""
+    if cached("exp-I2-conditions"):
+        return
+    scen = _scen_set()
+    normal = [next(s for s in scen if s.key == "normal").model_copy(update={"probability": 1.0})]
+    rows = []
+    for exp_cap, budget in ((300.0, 1000.0), (300.0, 1500.0), (900.0, 1500.0)):
+        p = SystemParams(export_capacity_mw=exp_cap)
+        det = _optimise(normal, budget, p=p)
+        fixed = {k: SystemParams().model_dump().get({"pv": "pv_existing_mw", "wind": "wind_existing_mw",
+                                                       "bp": "battery_power_existing_mw",
+                                                       "be": "battery_energy_existing_mwh"}[k], 0.0) + det["additions"][k]
+                 for k in ("pv", "wind", "bp", "be")}
+        for lam in (0.0, 1.0):
+            rp = _optimise(scen, budget, lam=lam, p=p)
+            inv = InvestmentOptions(enabled=True, budget_meur=budget)
+            cfg = RunConfig(scenarios=scen, invest=inv, fixed_capacity=fixed, params=p,
+                            risk=RiskOptions(alpha=0.9, weight=lam))
+            ev, mi, _ = run_repweeks(cfg)
+            w = mi.horizon_weight
+            rows.append(_clean({
+                "export_capacity_mw": exp_cap, "budget_meur": budget, "lambda": lam,
+                "rp_additions": rp["additions"], "det_additions": det["additions"],
+                "rp_objective_keur_annualised": rp["objective_keur_annualised"],
+                "eev_objective_keur_annualised": ev.objective_keur / w,
+                "vss_keur_annualised": ev.objective_keur / w - rp["objective_keur_annualised"],
+                "rp_expected_cost_keur_annualised": rp["objective_keur_annualised"] - lam * rp["risk"]["cvar_keur_annualised"],
+                "eev_expected_cost_keur_annualised": ev.objective_keur / w - lam * ev.risk["cvar_keur_annualised"],
+                "rp_cvar_keur_annualised": rp["risk"]["cvar_keur_annualised"],
+                "eev_cvar_keur_annualised": ev.risk["cvar_keur_annualised"],
+                "rp_expected_ens_mwh": float(sum(s["probability"] * s["ens_mwh"] for s in rp["scenarios"])),
+                "eev_expected_ens_mwh": float(sum(s["probability"] * s["ens_mwh"] for s in ev.scenario_results)),
+                "rp_expected_curtailment_mwh": float(sum(s["probability"] * (s["pv_curtail_mwh"] + s["wind_curtail_mwh"])
+                                                         for s in rp["scenarios"]))}))
+    save("exp-I2-conditions", {"kind": "experiment",
+                               "title": "I2. Conditions under which stochastic planning changes the decision",
+                               "hypothesis": "When PV surplus cannot be exported, storage value becomes scenario-dependent "
+                                             "and the stochastic plan differs from the deterministic plan (VSS > 0).",
+                               "rows": rows})
+
+
+def exp_K() -> None:
+    """Re-evaluate key plans with full-year chronological hourly dispatch (no representative-week sampling)."""
+    if cached("exp-H-chronological-check"):
+        return
+    fr = cached("ref-H-frontier")
+    if not fr:
+        return
+    ids = ["A_baseline", "B_solar", "C_wind", "D_battery", "F_robust", "R_l0.0_b500", "S_budget_1500"]
+    strat = {s["id"]: s for s in fr["strategies"] if s["id"] in ids}
+    scen = _scen_set()
+    p0 = SystemParams()
+    jobs = []
+    for sid, s in strat.items():
+        a = s["additions"]
+        flt = fleet(pv=p0.pv_existing_mw + a["pv"], wind=p0.wind_existing_mw + a["wind"], bp=a["bp"], be=a["be"])
+        for sc in scen:
+            jobs.append(job(f"{sid}|{sc.key}", sc.model_copy(update={"probability": 1.0}), flt))
+    rows = pmap(jobs)
+    by = {r["tag"]: r for r in rows}
+    from hydroflex.optimization.model import cvar_discrete
+
+    out = []
+    for sid, s in strat.items():
+        opex = np.array([by[f"{sid}|{sc.key}"]["metrics"]["opex_keur_annualised"] for sc in scen])
+        probs = np.array([sc.probability for sc in scen])
+        rk = cvar_discrete(opex, probs, 0.9)
+        out.append({"id": sid, "name": s["name"], "capex_annualised_keur": s["capex_annualised_keur"],
+                    "chrono_expected_total_keur": float(probs @ opex) + s["capex_annualised_keur"],
+                    "chrono_cvar_total_keur": rk["cvar_keur"] + s["capex_annualised_keur"],
+                    "repweek_expected_total_keur": s["expected"]["total_cost_keur_annualised"],
+                    "repweek_cvar_total_keur": s["cvar_total_keur_annualised"],
+                    "chrono_by_scenario_opex_keur": {sc.key: float(v) for sc, v in zip(scen, opex, strict=True)},
+                    "repweek_by_scenario_opex_keur": {k: v["opex_keur"] for k, v in s["by_scenario"].items()},
+                    "chrono_expected_imports_mwh": float(probs @ np.array([by[f"{sid}|{sc.key}"]["metrics"]["imports_mwh"] for sc in scen])),
+                    "chrono_expected_ens_mwh": float(probs @ np.array([by[f"{sid}|{sc.key}"]["metrics"]["ens_mwh"] for sc in scen]))})
+    rank_c = [o["id"] for o in sorted(out, key=lambda o: o["chrono_expected_total_keur"])]
+    rank_r = [o["id"] for o in sorted(out, key=lambda o: o["repweek_expected_total_keur"])]
+    save("exp-H-chronological-check", {"kind": "validation", "title": "Representative-week vs full-year chronological evaluation",
+                                       "rows": out, "rank_chronological": rank_c, "rank_representative_weeks": rank_r,
+                                       "issues": _check(rows, "K")})
 
 
 # ---------------------------------------------------------------------------------------------
@@ -551,7 +650,7 @@ def manifest() -> None:
         "workers": WORKERS, "data_label": DATA_NOTE, "synthetic_label": SYNTHETIC_LABEL}, indent=2), encoding="utf-8")
 
 
-STAGES = {"A": exp_payloads, "C": exp_C, "D": exp_D, "E": exp_E, "F": exp_F, "G": exp_G, "H": exp_H_I,
+STAGES = {"A": exp_payloads, "C": exp_C, "D": exp_D, "E": exp_E, "F": exp_F, "G": exp_G, "H": exp_H_I, "I2": exp_I2, "K": exp_K,
           "J": exp_J, "S": exp_sensitivity, "R": exp_resolution, "V": exp_validation}
 
 
@@ -570,9 +669,10 @@ def main() -> None:
         TIMINGS[k] = round(time.perf_counter() - t0, 1)
         print(f"[{_now()}] stage {k} done in {TIMINGS[k]} s", flush=True)
     manifest()
-    from hydroflex.experiments import figures, summary, tables
+    from hydroflex.experiments import figures, policy_brief, summary, tables
 
     summary.main()
+    policy_brief.main()
     tables.main()
     figures.main()
 
