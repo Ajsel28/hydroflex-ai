@@ -181,7 +181,8 @@ export function AppShell({ children }: { children?: ReactNode }) {
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [drawer, setDrawer] = useState(false);
   const loc = useLocation();
-  const { presentation } = useApp();
+  const { presentation, health } = useApp();
+  const staticDeploy = health?.deployment === 'static-snapshot';
 
   useEffect(() => {
     try {
@@ -272,6 +273,13 @@ export function AppShell({ children }: { children?: ReactNode }) {
             </div>
             <TopBarControls />
           </header>
+        )}
+        {staticDeploy && !fullBleed && (
+          <div role="status" className="border-b border-line bg-panel-2 px-4 py-2 text-xs text-ink-2 sm:px-6">
+            <span className="font-semibold text-money">Public static deployment.</span> All results shown are the verified reference
+            experiments{health?.snapshot_created_utc ? ` (snapshot ${health.snapshot_created_utc})` : ''}. Live HiGHS optimisation runs
+            only with the Python API (see the GitHub README); the Run buttons explain this rather than fabricate results.
+          </div>
         )}
         <main id="main" tabIndex={-1} className="flex-1 outline-none">
           <ErrorBoundary key={loc.pathname}>{children ?? <Outlet />}</ErrorBoundary>

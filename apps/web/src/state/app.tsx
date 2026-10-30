@@ -79,6 +79,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const runModel = useCallback(
     async (req: RunBody, signal?: AbortSignal) => {
       if (running.current) throw new ApiError('A run is already in progress in this browser tab', 0);
+      if (health?.deployment === 'static-snapshot') {
+        const err = new ApiError(
+          'Live optimisation is not available on this static deployment. It serves the verified reference experiments only; run the API locally (see README) for live HiGHS solves.',
+          503,
+        );
+        setSolver({ state: 'error', detail: 'static deployment' });
+        push({ tone: 'info', title: 'Live solver unavailable here', detail: err.message }, 10000);
+        throw err;
+      }
       running.current = true;
       setSolver({ state: 'running', startedAt: Date.now(), detail: req.mode });
       try {
@@ -115,7 +124,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         running.current = false;
       }
     },
-    [push, noteDataLabel],
+    [push, noteDataLabel, health],
   );
 
   const value = useMemo<AppCtx>(

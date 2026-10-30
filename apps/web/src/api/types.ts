@@ -18,6 +18,9 @@ export interface Health {
   reference_year: number;
   solver_busy: boolean;
   reference_experiments: number;
+  /** "static-snapshot" when served as pre-computed JSON without a live solver (public static deployment). */
+  deployment?: string;
+  snapshot_created_utc?: string;
 }
 
 export interface Equation {
