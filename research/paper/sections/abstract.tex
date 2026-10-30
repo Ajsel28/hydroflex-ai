@@ -1,0 +1,22 @@
+\begin{abstract}
+\noindent Albania generates almost all of its electricity from hydropower, so rainfall variability translates
+directly into import dependence. We present HYDROFLEX AI, an open and reproducible linear-programming model
+that coordinates a physically explicit reservoir water balance, run-of-river hydro, solar, wind, batteries
+with independent power and energy sizing, and a capacity-limited interconnector. It is solved with the open
+HiGHS solver and verified against an independent PyPSA formulation (objectives agree to solver precision). The planning layer is a two-stage stochastic programme with a conditional-value-at-risk (CVaR)
+term, built on hourly representative weeks whose seasonal boundaries are valued at water values from a coarse
+annual model. The planning results were checked against full-year chronology: representative-week costs are
+within 1.7--10~MEUR/yr, and the strategies rank in the same order. Inputs are weather-derived capacity
+factors (NASA POWER), reconstructed inflows and \emph{synthetic} demand and prices.
+
+\noindent With a fully available interconnector, a 40\% inflow reduction causes no shortage but raises net
+imports from 0.8 to 3.5~TWh/yr and operating cost by 284~MEUR/yr. Shortages appear only when import
+availability falls to about half, and they are energy-limited. In that regime batteries pay for themselves
+through avoided unserved energy, but not through arbitrage alone (13--27\% of their cost). Solar PV is a
+no-regret investment under the base assumptions: its marginal value is about 140~kEUR/MW-yr against an
+80~kEUR/MW-yr cost. Because PV dominates, stochastic and risk-averse planning select the same plan as
+deterministic planning (value of the stochastic solution = 0). When exports are restricted to 300~MW,
+risk-averse planning adds wind and cuts CVaR$_{0.9}$ by 74.5~MEUR/yr for 15.1~MEUR/yr of expected cost
+(full-year chronology). Coarse time steps and pinned week boundaries each distorted the conclusions. The model
+has not been validated against observed Albanian operations.
+\end{abstract}

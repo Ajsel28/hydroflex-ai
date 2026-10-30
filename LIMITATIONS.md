@@ -33,9 +33,10 @@ assumptions listed here and in `DATA_CARD.md`.
     arbitrage and shortage avoidance — real batteries often earn most revenue from services not modelled here.
 11. **Battery simultaneous charge/discharge** is not excluded by binary variables; a throughput cost removes the
     incentive and it is monitored ex post (reported in each run).
-12. **Representative weeks.** Investment and stochastic runs use 8 hourly weeks per scenario; reservoir volumes at
-    week boundaries come from a coarse (6-h) annual run of the same scenario (two passes). This preserves seasonal
-    coupling approximately but not exactly.
+12. **Representative weeks.** Investment and stochastic runs use 8 hourly weeks per scenario. Each week starts at the
+    volume of a coarse (6-h) annual run with the existing fleet, and its end volume is valued at that run's water value.
+    Seasonal water allocation therefore does not adapt to new investment. Against full-year chronology the error is
+    1.7-10.0 MEUR/yr in expected cost, with strategy rankings preserved (`exp-H-chronological-check`).
 
 ## Uncertainty and economics
 13. **Scenario probabilities are partly assumed** (historical bins from reconstructed years plus an assumed 15%

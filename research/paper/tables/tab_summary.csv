@@ -1,0 +1,14 @@
+ID,Experiment,Hypothesis
+A,"Reference operation, normal conditions",supported
+B,Hydropower reduction under drought,supported
+C,Solar without batteries,supported
+D,Batteries without new renewables,supported
+E,"Coordinated solar, wind, hydro and storage",supported
+F,Import price shock and interconnector derating,supported
+G,Demand growth stress test,supported
+H,Investment planning under capital constraints,descriptive
+I,Deterministic versus stochastic planning,not supported
+J,Marginal value of flexibility,supported
+I2,When stochastic planning changes the decision,supported
+K,Representative weeks vs full-year chronology,supported
+R,Temporal-resolution sensitivity,supported

@@ -355,7 +355,7 @@ def t_data_dictionary() -> None:
 def main() -> None:
     print("tables:")
     for f in (t_assumptions, t_scenarios, t_annual, t_CDE, t_FG, t_strategies, t_stochastic, t_i2, t_chrono, t_marginal, t_validation,
-              t_solver, t_data_dictionary):
+              t_solver, t_data_dictionary, t_summary):
         try:
             f()
         except Exception as exc:
@@ -364,3 +364,18 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def t_summary() -> None:
+    d = load("ref-summary")
+    if not d:
+        return
+    verdict = {True: "supported", False: "not supported", None: "descriptive"}
+    rows = [[esc(e["id"]), esc(e["title"]), verdict[e.get("supported")]] for e in d["experiments"]]
+    write("tab_summary", ["ID", "Experiment", "Hypothesis"], rows,
+          "Outcome of the numerical hypothesis tests (generated from \texttt{ref-summary.json}).", "tab:summary-findings",
+          colspec="lp{9cm}l", size=r"\footnotesize")
+
+
+if __name__ == "__main__":
+    t_summary()

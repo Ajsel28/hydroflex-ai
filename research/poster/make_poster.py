@@ -33,8 +33,9 @@ def panel(fig, x, y, w, h, title, color=CYAN):
     ax.set_axis_off()
     ax.add_patch(FancyBboxPatch((0, 0), 1, 1, boxstyle="round,pad=0,rounding_size=0.015", transform=ax.transAxes,
                                 fc="white", ec="#CBD5E1", lw=1.5))
-    ax.add_patch(Rectangle((0, 0.965), 1, 0.035, transform=ax.transAxes, fc=color, ec="none"))
-    ax.text(0.02, 0.982, title, transform=ax.transAxes, fontsize=30, color="white", weight="bold", va="center")
+    bar = 0.75 / (h * H)
+    ax.add_patch(Rectangle((0, 1 - bar), 1, bar, transform=ax.transAxes, fc=color, ec="none"))
+    ax.text(0.02, 1 - bar / 2, title, transform=ax.transAxes, fontsize=28, color="white", weight="bold", va="center")
     return ax
 
 
@@ -62,10 +63,10 @@ def main() -> None:
     hd = fig.add_axes([0, 0.905, 1, 0.095])
     hd.set_axis_off()
     hd.add_patch(Rectangle((0, 0), 1, 1, transform=hd.transAxes, fc=NAVY))
-    hd.text(0.03, 0.72, "Climate-Aware Stochastic Optimization of Hydropower, Renewable Generation,", fontsize=50,
+    hd.text(0.03, 0.74, "Climate-Aware Stochastic Optimization of Hydropower, Renewable", fontsize=46,
             color="white", weight="bold", transform=hd.transAxes)
-    hd.text(0.03, 0.47, "and Battery Storage for Electricity-System Resilience in Albania", fontsize=50, color="white",
-            weight="bold", transform=hd.transAxes)
+    hd.text(0.03, 0.48, "Generation, and Battery Storage for Electricity-System Resilience in Albania", fontsize=46,
+            color="white", weight="bold", transform=hd.transAxes)
     hd.text(0.03, 0.2, "Ajsel Budlla  ·  Whitman College, Walla Walla, WA, USA  ·  HYDROFLEX AI — open-source research prototype",
             fontsize=28, color="#A5F3FC", transform=hd.transAxes)
     hd.add_patch(Rectangle((0.885, 0.12), 0.09, 0.76, transform=hd.transAxes, fc="white", ec=CYAN, lw=3))
@@ -76,7 +77,7 @@ def main() -> None:
     cw = (1 - 2 * m - gap) / 2
     # left column
     a = panel(fig, m, 0.765, cw, 0.13, "Problem & research question")
-    text(a, 0.03, 0.9, "Albania: ≈95% of installed capacity is hydropower; the Drin cascade (Fierza 500, Koman 600, "
+    text(a, 0.03, 0.8, "Albania: ≈95% of installed capacity is hydropower; the Drin cascade (Fierza 500, Koman 600, "
                        "Vau i Dejës 250 MW) dominates supply. Dry years mean imports; IRENA projects ≈15–20% lower "
                        "average hydro output by 2050.\n\nHow should a hydropower-dependent system coordinate reservoir "
                        "operation, solar, wind, batteries and imports under uncertain rainfall, demand and budgets?",
@@ -86,8 +87,8 @@ def main() -> None:
     text(a, 0.03, 0.33, "Linear programme (HiGHS): hourly energy balance · reservoir water balance in hm³ "
                         "(κ = ρgHη ≈ 552 MWh/hm³) · battery SOC with independent MW/MWh sizing · aggregate "
                         "interconnector · VOLL-priced shortage · capital budget.\nTwo-stage stochastic programme: "
-                        "shared capacities, 5 inflow/market scenarios × 8 hourly representative weeks with nested "
-                        "seasonal reservoir boundaries; CVaR via Rockafellar–Uryasev. Verified against PyPSA.",
+                        "shared capacities, 5 inflow/market scenarios × 8 hourly representative weeks with water-value "
+                        "seasonal boundaries (validated vs full-year chronology); CVaR via Rockafellar–Uryasev. Verified against PyPSA.",
          size=19, width=82)
     a = panel(fig, m, 0.30, cw, 0.18, "Data & scenarios", color=AMBER)
     image(fig, FIG / "fig03_profiles.png", m + 0.01, 0.305, cw * 0.58, 0.155)
@@ -101,13 +102,18 @@ def main() -> None:
     x2 = m + cw + gap
     a = panel(fig, x2, 0.615, cw, 0.28, "Main verified findings", color=EMER)
     y = 0.93
-    for k in ("B", "C", "E", "F", "H", "I", "J"):
+    for k in ("B", "F", "C", "D", "I", "I2", "R", "K"):
         e = find.get(k)
         if not e:
             continue
-        text(a, 0.03, y, f"{e['id']}. {e['title']}", size=19, width=80, color=EMER, weight="bold")
-        text(a, 0.03, y - 0.035, e["finding"], size=15.5, width=104)
-        y -= 0.135
+        sents = e["finding"].split(". ")
+        short = ". ".join(sents[:2]).rstrip(".") + "."
+        if len(short) > 330:
+            short = short[:327].rsplit(" ", 1)[0] + " …"
+        verdict = {True: "supported", False: "not supported", None: "descriptive"}[e.get("supported")]
+        text(a, 0.03, y, f"{e['id']}. {e['title']}  [{verdict}]", size=18, width=90, color=EMER, weight="bold")
+        text(a, 0.03, y - 0.03, short, size=15, width=112)
+        y -= 0.113
     a = panel(fig, x2, 0.395, cw, 0.21, "Investment frontier & tail risk", color=VIOLET)
     image(fig, FIG / "fig08_investment_frontier.png", x2 + 0.01, 0.40, cw * 0.55, 0.18)
     image(fig, FIG / "fig09_cvar.png", x2 + cw * 0.56, 0.40, cw * 0.43, 0.18)

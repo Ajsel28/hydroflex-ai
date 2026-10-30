@@ -79,3 +79,14 @@ All entries are written during the build. Times are local (session date 2026-10-
    chronological / water-value / hard): baseline 107.7 / 109.4 / 128.1; PV-only 66.7 / 70.9 / 81.1;
    old robust plan 76.3 / 80.3 / 83.1; budget-1500 plan 4.2 / 12.9 / 21.7; no spurious shortage. Hard-boundary
    artefacts moved to `results/superseded/hard_boundary/`. New test `test_terminal_water_value_reconciliation`.
+
+## Stage 8 — Final experiments, outputs and verification
+- Water-value planning stages rerun: base-case stochastic = deterministic (VSS 0); new experiment I2 shows VSS > 0
+  with restricted exports (wind hedge), confirmed by chronology (I3).
+- Battery-value claim in the draft sensitivity text was wrong (net benefit is strongly positive under shortage at
+  VOLL); corrected in paper, README and summary.
+- Figures (12), LaTeX tables (20), ref-summary, policy brief, executive summary and A0 poster generated.
+- Manuscript static check: all inputs, refs, cites and figures resolve; PDF not compiled (no LaTeX engine).
+- Final verification: pytest 67 passed; ruff clean; web typecheck/lint clean, vitest 42 passed, build OK.
+- The frontend agent stopped on a session rate limit while capturing screenshots. The API dev server was stopped
+  by the system because memory was low, and was not restarted.

@@ -1,0 +1,31 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We built and verified an open optimisation model of a hydropower-dependent electricity system. It couples
+hourly dispatch, a physical reservoir water balance, batteries, imports and investment under uncertainty,
+and it reports every result together with its data provenance and its limitations. Under the stated (partly
+synthetic) assumptions, the experiments support the following defensible findings.
+\begin{enumerate}
+\item Drought is primarily a financial and import-dependence risk. Reliability is governed by the
+availability of interconnection: shortages require import availability of about 50\% or less together with
+severe drought or demand growth.
+\item Solar PV is a no-regret investment in every scenario as long as its surplus can be exported. Its
+marginal value is about 1.7$\times$ its annualised cost, and the technology choice is robust to every
+sensitivity tested.
+\item Batteries do not recover their cost through arbitrage, and they increase gross imports. They do pay
+off through avoided unserved energy in joint drought and import-stress events. Discharge power is more
+valuable than additional energy capacity.
+\item Stochastic, CVaR-based planning changes the decision only when the dominant resource saturates. With
+exports restricted, it buys a wind hedge that lowers tail cost by 74.5~MEUR/yr for 15.1~MEUR/yr of expected
+cost, and this is confirmed by full chronology.
+\item Methodologically, temporal resolution and the boundary treatment of representative periods for
+seasonal storage each changed conclusions. Water-value boundaries and chronological validation are
+inexpensive safeguards.
+\end{enumerate}
+
+\paragraph{Next steps.} (i)~Replace the synthetic demand and prices with observed ENTSO-E load and regional
+market data. (ii)~Calibrate the hydrology against gauge or plant records and represent the three Drin stages
+separately, with variable head. (iii)~Add network constraints for the four interconnections and correlated
+regional scenarios, including the low-availability regime in which storage becomes valuable. (iv)~Add
+reserve requirements and multi-stage hydro scheduling, for example SDDP-style water-value cuts. (v)~Estimate
+scenario probabilities from climate-model ensembles rather than by assumption.
