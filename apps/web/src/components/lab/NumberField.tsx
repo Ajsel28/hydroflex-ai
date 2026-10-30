@@ -28,7 +28,7 @@ export function NumberField({
   const msg = error ?? serverError ?? null;
   const num = Number(value);
   return (
-    <div className={cx('flex flex-col gap-1', disabled && 'opacity-50')}>
+    <div className={cx('flex min-w-0 flex-col gap-1', disabled && 'opacity-50')}>
       <div className="flex items-center justify-between gap-2">
         <label htmlFor={id} className="flex items-center gap-1.5 text-[0.78rem] font-medium text-ink-2">
           {spec.label}

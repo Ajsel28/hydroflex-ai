@@ -5,6 +5,8 @@
 \usepackage[margin=2.3cm]{geometry}
 \usepackage{amsmath,amssymb,bm}
 \usepackage{booktabs}
+\usepackage[section]{placeins}
+\usepackage{adjustbox}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{caption}
@@ -13,9 +15,23 @@
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{microtype}
+\usepackage{newunicodechar}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{—}{---}
+\newunicodechar{–}{--}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{³}{\ensuremath{^3}}
+\newunicodechar{₀}{\ensuremath{_0}}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
-\usepackage{url}
+\usepackage{xurl}
 \graphicspath{{figures/}}
 \captionsetup{font=small,labelfont=bf}
 \setlist{itemsep=2pt,topsep=4pt}
@@ -28,6 +44,7 @@
 \date{\small Manuscript generated from the HYDROFLEX AI experiment pipeline}
 
 \begin{document}
+\setlength{\emergencystretch}{2.5em}
 \maketitle
 
 \input{sections/abstract}
@@ -46,7 +63,7 @@
 \section*{Data and code availability}
 All code, input-data provenance records, experiment outputs and the scripts that generate every figure and
 table in this manuscript are contained in the HYDROFLEX AI repository. Running
-\texttt{python -m hydroflex.experiments.run_all} regenerates the experiment files, tables and figures.
+\texttt{python -m hydroflex.experiments.run\_all} regenerates the experiment files, tables and figures.
 Demand and price series are synthetic and are labelled as such in every output.
 
 \section*{Use of software and AI assistance}
@@ -55,7 +72,8 @@ assistant (Claude, Anthropic) operating under the author's direction. All report
 executed code in the repository.
 
 \bibliographystyle{unsrtnat}
-\bibliography{references}
+{\sloppy
+\bibliography{references}}
 
 \appendix
 \input{sections/appendix}

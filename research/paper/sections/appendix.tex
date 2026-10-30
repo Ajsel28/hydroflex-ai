@@ -1,3 +1,4 @@
+\FloatBarrier
 \section{Symbols}
 \label{app:symbols}
 \begin{table}[htbp]\centering\footnotesize
@@ -33,26 +34,30 @@ $B$ & MEUR & overnight capital budget \\
 \end{tabular}
 \end{table}
 
+\FloatBarrier
 \section{Additional results}
 \label{app:results}
 \IfFileExists{tables/tab_exp_D.tex}{\input{tables/tab_exp_D}}{}
 \IfFileExists{tables/tab_exp_G.tex}{\input{tables/tab_exp_G}}{}
 \IfFileExists{tables/tab_risk_sweep.tex}{\input{tables/tab_risk_sweep}}{}
 
+\FloatBarrier
 \section{Solver diagnostics and verification}
 \label{app:solver}
 \IfFileExists{tables/tab_solver.tex}{\input{tables/tab_solver}}{}
 \IfFileExists{tables/tab_validation.tex}{\input{tables/tab_validation}}{}
 
+\FloatBarrier
 \section{Data dictionary}
 \label{app:data}
 \IfFileExists{tables/tab_data_dictionary.tex}{\input{tables/tab_data_dictionary}}{}
 
+\FloatBarrier
 \section{Reproducibility instructions}
 \label{app:repro}
 \begin{enumerate}
 \item \texttt{python -m venv .venv} and \texttt{pip install -e ".[dev]"} (Python $\ge$ 3.11).
-\item Optional data refresh: \texttt{python -m hydroflex.data.fetch} then \texttt{python -m hydroflex.data.profiles}.
+\item Optional data refresh:\newline \texttt{python -m hydroflex.data.fetch}, then\newline \texttt{python -m hydroflex.data.profiles}.
 \item \texttt{python -m hydroflex.experiments.run\_all} (add \texttt{--force} to recompute cached experiments).
 \item \texttt{pytest} runs the verification suite.
 \item Compile this manuscript with \texttt{latexmk -pdf main.tex} (or \texttt{tectonic main.tex}) in \texttt{research/paper}.

@@ -146,7 +146,7 @@ function ProvenanceBadge() {
       <span
         id="prov-tip"
         role="tooltip"
-        className="pointer-events-none invisible absolute left-0 top-full z-50 mt-2 w-[min(420px,80vw)] rounded-lg border border-line-strong bg-panel-2 p-3 text-xs leading-relaxed text-ink-2 opacity-0 shadow-xl transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
+        className="pointer-events-none invisible fixed left-4 right-4 top-14 z-50 mt-2 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-[min(420px,80vw)] rounded-lg border border-line-strong bg-panel-2 p-3 text-xs leading-relaxed text-ink-2 opacity-0 shadow-xl transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
       >
         <span className="eyebrow mb-1 block">Data provenance</span>
         {dataLabel}

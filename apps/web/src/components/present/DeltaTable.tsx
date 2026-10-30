@@ -27,7 +27,7 @@ export function DeltaTable({ a, b, labelA, labelB, rows = DELTA_ROWS }: { a: Run
   const ma = primaryMetrics(a);
   const mb = primaryMetrics(b);
   return (
-    <div className="scrollbar-thin overflow-x-auto">
+    <div className="scrollbar-thin max-w-[calc(100vw-2.5rem)] overflow-x-auto sm:max-w-none">
       <table className="w-full min-w-[520px] border-collapse text-sm">
         <caption className="sr-only">
           {labelB} compared with {labelA}

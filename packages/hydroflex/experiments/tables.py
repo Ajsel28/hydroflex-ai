@@ -27,16 +27,20 @@ def esc(s: Any) -> str:
     return str(s).replace("&", r"\&").replace("%", r"\%").replace("_", r"\_").replace("#", r"\#")
 
 
+def _nz(x: float, tol: float) -> float:
+    return 0.0 if abs(x) < tol else x
+
+
 def f0(x: float | None) -> str:
-    return "--" if x is None else f"{x:,.0f}".replace(",", r"\,")
+    return "--" if x is None else f"{_nz(x, 0.5):,.0f}".replace(",", r"\,")
 
 
 def f1(x: float | None) -> str:
-    return "--" if x is None else f"{x:,.1f}".replace(",", r"\,")
+    return "--" if x is None else f"{_nz(x, 0.05):,.1f}".replace(",", r"\,")
 
 
 def f2(x: float | None) -> str:
-    return "--" if x is None else f"{x:,.2f}".replace(",", r"\,")
+    return "--" if x is None else f"{_nz(x, 0.005):,.2f}".replace(",", r"\,")
 
 
 def f3(x: float | None) -> str:
@@ -48,9 +52,10 @@ def write(name: str, header: list[str], rows: list[list[str]], caption: str, lab
     TAB.mkdir(parents=True, exist_ok=True)
     colspec = colspec or ("l" + "r" * (len(header) - 1))
     lines = [r"\begin{table}[htbp]", r"\centering", size, rf"\caption{{{caption}}}", rf"\label{{{label}}}",
+             r"\begin{adjustbox}{max width=\linewidth}",
              rf"\begin{{tabular}}{{{colspec}}}", r"\toprule", " & ".join(header) + r" \\", r"\midrule"]
     lines += [" & ".join(r) + r" \\" for r in rows]
-    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{adjustbox}", r"\end{table}"]
     (TAB / f"{name}.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
     with open(TAB / f"{name}.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
@@ -170,12 +175,12 @@ def t_FG() -> None:
     d = load("exp-F")
     if d:
         tags = [(f"price{m}", f"Import price ×{m}") for m in (1.0, 1.5, 2.0, 2.5, 3.0)]
-        tags += [(f"avail{a}", f"NTC avail. {a:.0%}, +8\\% demand") for a in (1.0, 0.75, 0.5, 0.35, 0.25)]
-        tags += [(f"avail{a}|batt", f"NTC {a:.0%}, +8\\% dem., battery 400/1600") for a in (0.5, 0.35, 0.25)]
+        tags += [(f"avail{a}", f"NTC avail. {a:.0%}, +8% demand") for a in (1.0, 0.75, 0.5, 0.35, 0.25)]
+        tags += [(f"avail{a}|batt", f"NTC {a:.0%}, +8% dem., battery 400/1600") for a in (0.5, 0.35, 0.25)]
         cols = COLS[:2] + [("LOLH (h)", lambda m: m["lol_hours"], f0), COLS[4],
                            ("Cost (MEUR/yr)", lambda m: m["total_cost_keur_annualised"] / 1e3, f1)]
         rows, raw = _rows(d, tags, cols)
-        write("tab_exp_F", ["Case (severe drought)"] + [c[0] for c in cols], rows,
+        write("tab_exp_F", ["Case (severe drought)"] + [c[0] for c in cols], [[esc(r[0])] + r[1:] for r in rows],
               "Experiment F: import price shocks and interconnector derating under severe drought (annual, hourly).",
               "tab:exp-F", raw_rows=raw, size=r"\footnotesize")
     d = load("exp-G")
@@ -225,7 +230,7 @@ def t_stochastic() -> None:
         write("tab_stochastic", ["Plan", "+PV", "+Wind", "+B MW", "+B MWh", "E[cost]", "CVaR$_{0.9}$"], rows,
               f"Two-stage stochastic versus deterministic planning (budget 500 MEUR, 8 representative weeks, water-value "
               f"boundaries). E[cost]: expected total annualised cost (MEUR/yr) on all five scenarios; CVaR of operating "
-              f"cost (MEUR/yr). Risk-adjusted VSS = {c['vss_keur_annualised'] / 1e3:.2f} MEUR/yr; {evpi_txt}.",
+              f"cost (MEUR/yr). Risk-adjusted VSS = {_nz(c['vss_keur_annualised'] / 1e3, 0.005):.2f} MEUR/yr; {evpi_txt}.",
               "tab:stochastic")
     if rs:
         rows, raw = [], []
@@ -251,7 +256,7 @@ def t_i2() -> None:
     for r in d["rows"]:
         a, b = r["rp_additions"], r["det_additions"]
         rows.append([f0(r["export_capacity_mw"]), f0(r["budget_meur"]), f"{r['lambda']:g}",
-                     f"{a['pv']:.0f}/{a['wind']:.0f}/{a['bp']:.0f}/{a['be']:.0f}", f"{b['pv']:.0f}/{b['wind']:.0f}/{b['bp']:.0f}/{b['be']:.0f}",
+                     "/".join(f0(a[k]) for k in ("pv", "wind", "bp", "be")), "/".join(f0(b[k]) for k in ("pv", "wind", "bp", "be")),
                      f1(r["rp_expected_cost_keur_annualised"] / 1e3), f1(r["eev_expected_cost_keur_annualised"] / 1e3),
                      f1(r["rp_cvar_keur_annualised"] / 1e3), f1(r["eev_cvar_keur_annualised"] / 1e3), f1(r["vss_keur_annualised"] / 1e3)])
         raw.append([r["export_capacity_mw"], r["budget_meur"], r["lambda"], a, b, r["rp_expected_cost_keur_annualised"],
@@ -345,11 +350,11 @@ def t_data_dictionary() -> None:
     for f in sorted((REPO_ROOT / "data" / "provenance").glob("*.json")):
         d = json.loads(f.read_text(encoding="utf-8"))
         nature = d["nature"] if isinstance(d["nature"], str) else "mixed (see record)"
-        rows.append([esc(d["dataset_id"]), esc(d["provider"][:48]), esc(d["temporal_resolution"]), esc(d["time_coverage"][:30]),
-                     esc(nature[:60])])
+        rows.append([esc(d["dataset_id"]), esc(d["provider"]), esc(d["temporal_resolution"]), esc(d["time_coverage"]),
+                     esc(nature)])
     write("tab_data_dictionary", ["Dataset id", "Provider", "Resolution", "Coverage", "Nature"], rows,
           "Data dictionary: machine-readable provenance records in \\texttt{data/provenance/}.", "tab:data-dictionary",
-          colspec="p{3.6cm}p{3.4cm}p{1.3cm}p{2.6cm}p{3.6cm}", size=r"\scriptsize")
+          colspec="lp{3.4cm}p{1.3cm}p{2.6cm}p{4.2cm}", size=r"\scriptsize")
 
 
 def main() -> None:
@@ -373,7 +378,7 @@ def t_summary() -> None:
     verdict = {True: "supported", False: "not supported", None: "descriptive"}
     rows = [[esc(e["id"]), esc(e["title"]), verdict[e.get("supported")]] for e in d["experiments"]]
     write("tab_summary", ["ID", "Experiment", "Hypothesis"], rows,
-          "Outcome of the numerical hypothesis tests (generated from \texttt{ref-summary.json}).", "tab:summary-findings",
+          r"Outcome of the numerical hypothesis tests (generated from \texttt{ref-summary.json}).", "tab:summary-findings",
           colspec="lp{9cm}l", size=r"\footnotesize")
 
 

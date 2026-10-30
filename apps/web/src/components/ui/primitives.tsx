@@ -226,7 +226,7 @@ export function Select<T extends string>({
 }) {
   const id = useId();
   return (
-    <div className={cx('flex flex-col gap-1', className)}>
+    <div className={cx('flex min-w-0 flex-col gap-1', className)}>
       <label htmlFor={id} className={hideLabel ? 'sr-only' : 'eyebrow'}>
         {label}
       </label>

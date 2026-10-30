@@ -3,23 +3,25 @@
 \scriptsize
 \caption{Data dictionary: machine-readable provenance records in \texttt{data/provenance/}.}
 \label{tab:data-dictionary}
-\begin{tabular}{p{3.6cm}p{3.4cm}p{1.3cm}p{2.6cm}p{3.6cm}}
+\begin{adjustbox}{max width=\linewidth}
+\begin{tabular}{lp{3.4cm}p{1.3cm}p{2.6cm}p{4.2cm}}
 \toprule
 Dataset id & Provider & Resolution & Coverage & Nature \\
 \midrule
-nasa\_power\_daily\_drin\_black & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflow \\
-nasa\_power\_daily\_drin\_koman & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflow \\
-nasa\_power\_daily\_drin\_kukes & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflow \\
-nasa\_power\_daily\_drin\_white & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflow \\
-nasa\_power\_hourly\_load\_tirana & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measur \\
-nasa\_power\_hourly\_solar\_fier & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measur \\
-nasa\_power\_hourly\_solar\_vlore & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measur \\
-nasa\_power\_hourly\_wind\_lezhe & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measur \\
-nasa\_power\_hourly\_wind\_vlore & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measur \\
+nasa\_power\_daily\_drin\_black & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflows are reconstructed, NOT gauged \\
+nasa\_power\_daily\_drin\_koman & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflows are reconstructed, NOT gauged \\
+nasa\_power\_daily\_drin\_kukes & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflows are reconstructed, NOT gauged \\
+nasa\_power\_daily\_drin\_white & NASA Langley Research Center, POWER Project & daily & 2000-01-01 to 2023-12-31 & observed-derived reanalysis precipitation; downstream inflows are reconstructed, NOT gauged \\
+nasa\_power\_hourly\_load\_tirana & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measured power production) \\
+nasa\_power\_hourly\_solar\_fier & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measured power production) \\
+nasa\_power\_hourly\_solar\_vlore & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measured power production) \\
+nasa\_power\_hourly\_wind\_lezhe & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measured power production) \\
+nasa\_power\_hourly\_wind\_vlore & NASA Langley Research Center, POWER Project & hourly & 2019-01-01 to 2023-12-31 & observed-derived reanalysis / satellite estimate (NOT measured power production) \\
 natural\_earth\_admin0\_50m & Natural Earth (naturalearthdata.com) & n/a & static & observed (cartographic) \\
 open\_meteo\_era5\_tirana\_2021 & Open-Meteo.com (Copernicus ERA5 reanalysis) & hourly & 2021-01-01 to 2021-12-31 & reanalysis \\
-processed\_hourly\_profiles & Derived by HydroFlex AI from NASA POWER (see raw & hourly & 2019–2023, 8760 h per year (29 & mixed (see record) \\
-processed\_inflow\_daily & Derived by HydroFlex AI from NASA POWER daily pr & daily & 2001-01-01 to 2023-12-31 (2000 & reconstructed — volume scaled to an assumed long-run mean en \\
+processed\_hourly\_profiles & Derived by HydroFlex AI from NASA POWER (see raw provenance records) & hourly & 2019–2023, 8760 h per year (29 Feb removed in leap years) & mixed (see record) \\
+processed\_inflow\_daily & Derived by HydroFlex AI from NASA POWER daily precipitation and temperature & daily & 2001-01-01 to 2023-12-31 (2000 used as spin-up) & reconstructed — volume scaled to an assumed long-run mean energy; NOT observed inflows \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \end{table}

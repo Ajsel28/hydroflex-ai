@@ -147,7 +147,7 @@ export function DataTable<T>({
   onRowClick?: (r: T) => void;
 }) {
   return (
-    <div className="scrollbar-thin -mx-1 overflow-x-auto px-1">
+    <div className="scrollbar-thin -mx-1 max-w-[calc(100vw-2.5rem)] overflow-x-auto px-1 sm:max-w-none">
       <table className="w-full min-w-[520px] border-collapse text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
